@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FastRecorder · 界面概念稿</title>
+<style>
+  :root{
+    --page:#07080c;
+    --panel:#15161e;
+    --panel-2:#1b1d27;
+    --panel-3:#101117;
+    --line:rgba(255,255,255,.08);
+    --line-2:rgba(255,255,255,.05);
+    --text:#e9ebf3;
+    --muted:#8d93a6;
+    --muted-2:#666d80;
+    --accent:#8b6cff;
+    --accent-2:#b49cff;
+    --accent-soft:rgba(139,108,255,.14);
+    --red:#ff4d5e;
+    --red-2:#e33549;
+    --green:#3ddc97;
+    --cyan:#38d4e8;
+    --amber:#ffb454;
+    --radius:22px;
+    --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
+    --sans:"Segoe UI Variable Text","Segoe UI",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--page);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(900px 500px at 15% -10%,rgba(139,108,255,.13),transparent 60%),
+      radial-gradient(800px 500px at 90% 0%,rgba(56,212,232,.07),transparent 55%),
+      var(--page);
+  }
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  input{font:inherit;color:inherit;background:none;border:0;outline:0}
+  svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;display:block;flex:none}
+  .num{font-variant-numeric:tabular-nums}
+
+  .page-head{
+    max-width:1536px;margin:0 auto;padding:22px 32px 18px;
+    display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:12px;min-width:240px}
+  .brand-mark{
+    width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;
+    background:conic-gradient(from 210deg,#8b6cff,#d86cff,#ff4d6d,#8b6cff);
+    box-shadow:0 8px 24px rgba(139,108,255,.35), inset 0 0 0 1px rgba(255,255,255,.18);
+  }
+  .brand-mark svg{width:22px;height:22px}
+  .brand h1{font-size:16.5px;font-weight:650;letter-spacing:.01em;display:flex;align-items:center;gap:9px}
+  .brand h1 em{font-style:normal;font-weight:500;font-size:10.5px;color:var(--muted);border:1px solid var(--line);padding:3px 7px;border-radius:99px;letter-spacing:.06em}
+  .brand p{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .view-tabs{display:flex;align-items:center;gap:4px;margin-left:auto;padding:4px;background:#0d0e14;border:1px solid var(--line);border-radius:12px;overflow:auto;max-width:100%}
+  .view-tabs button{
+    display:flex;align-items:center;gap:8px;white-space:nowrap;
+    padding:8px 13px;border-radius:8px;font-size:12px;color:var(--muted);
+    transition:background .18s,color .18s;
+  }
+  .view-tabs button span{font-family:var(--mono);font-size:9.5px;color:#565d70}
+  .view-tabs button:hover{color:#d7dbe8;background:rgba(255,255,255,.04)}
+  .view-tabs button.active{color:#fff;background:linear-gradient(180deg,#2a2542,#201c34);box-shadow:inset 0 0 0 1px rgba(139,108,255,.35),0 2px 10px rgba(0,0,0,.3)}
+  .view-tabs button.active span{color:var(--accent-2)}
+  .head-note{font-size:11px;color:var(--muted-2);display:flex;align-items:center;gap:7px}
+  .head-note i{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(61,220,151,.1)}
+
+  .workspace{max-width:1536px;margin:0 auto;padding:0 32px 12px}
+  .stage-wrap{position:relative;width:100%}
+  .stage{
+    position:absolute;top:0;left:0;width:1440px;height:900px;transform-origin:top left;
+    border-radius:22px;overflow:hidden;background:#0a0b12;
+    box-shadow:0 50px 140px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.07),inset 0 0 0 1px rgba(255,255,255,.04);
+    isolation:isolate;
+  }
+  .wallpaper{position:absolute;inset:0;background:
+    radial-gradient(980px 640px at 16% 10%,rgba(124,92,255,.38),transparent 62%),
+    radial-gradient(760px 520px at 88% 16%,rgba(40,210,235,.16),transparent 60%),
+    radial-gradient(900px 700px at 62% 105%,rgba(255,77,109,.14),transparent 62%),
+    linear-gradient(135deg,#0a0b14 0%,#121026 46%,#0a1118 100%);
+  }
+  .wallpaper::before{
+    content:"";position:absolute;inset:0;
+    background-image:linear-gradient(rgba(255,255,255,.032) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.032) 1px,transparent 1px);
+    background-size:84px 84px;
+    mask-image:radial-gradient(ellipse at 52% 44%,#000 12%,transparent 78%);
+    -webkit-mask-image:radial-gradient(ellipse at 52% 44%,#000 12%,transparent 78%);
+  }
+  .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.42;pointer-events:none}
+  .orb-a{width:520px;height:420px;left:-130px;top:300px;background:#5d3cff}
+  .orb-b{width:420px;height:380px;right:-100px;top:470px;background:#ff3d71;opacity:.18}
+  .orb-c{width:340px;height:300px;right:280px;top:-90px;background:#24c8e8;opacity:.14}
+  .desktop{position:absolute;inset:0;z-index:2}
+
+  .win{
+    position:absolute;border-radius:13px;overflow:hidden;background:#12141b;
+    border:1px solid rgba(255,255,255,.09);
+    box-shadow:0 34px 90px rgba(0,0,0,.58),0 2px 0 rgba(255,255,255,.04) inset;
+  }
+  .win-bar{height:38px;display:flex;align-items:center;gap:10px;padding:0 13px;background:linear-gradient(180deg,#1a1c26,#151720);border-bottom:1px solid rgba(255,255,255,.06)}
+  .dots{display:flex;gap:6px}
+  .dots i{width:9px;height:9px;border-radius:50%;background:#343948}
+  .win-title{font-size:11.5px;color:#aab0c0;letter-spacing:.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .win-badge{margin-left:auto;font-size:9.5px;color:#8f95a8;border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:2px 6px;background:rgba(255,255,255,.03)}
+  .win-ctrl{margin-left:auto;display:flex;gap:14px;color:#5d6476;font-size:11px;align-items:center}
+  .win-ctrl i{display:block;width:9px;height:9px;border:1px solid currentColor;border-radius:2px}
+  .win-ctrl b{display:block;width:9px;height:1px;background:currentColor}
+  .win-ctrl s{display:block;width:9px;height:9px;position:relative;text-decoration:none}
+  .win-ctrl s::before,.win-ctrl s::after{content:"";position:absolute;left:4px;top:0;width:1px;height:10px;background:currentColor;transform:rotate(45deg)}
+  .win-ctrl s::after{transform:rotate(-45deg)}
+
+  .editor-win{left:108px;top:154px;width:764px;height:556px}
+  .editor-shell{display:flex;height:calc(100% - 38px)}
+  .editor-rail{width:46px;background:#0f1117;border-right:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;gap:9px;padding-top:12px}
+  .editor-rail span{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:#5e6579}
+  .editor-rail span.active{color:#c9bcff;background:rgba(139,108,255,.14)}
+  .editor-rail svg{width:14px;height:14px}
+  .editor-side{width:152px;background:#11131a;border-right:1px solid rgba(255,255,255,.05);padding:12px 10px;font-size:11px;color:#858c9f;overflow:hidden}
+  .side-head{font-size:9.5px;letter-spacing:.12em;color:#5a6174;text-transform:uppercase;margin-bottom:9px}
+  .side-row{display:flex;align-items:center;gap:6px;height:23px;padding:0 5px;border-radius:5px;white-space:nowrap}
+  .side-row svg{width:12px;height:12px;opacity:.65}
+  .side-row.active{background:#1d1f2b;color:#d9dcea}
+  .side-row.indent{padding-left:19px;color:#798196}
+  .side-row .dot{width:5px;height:5px;border-radius:1px;background:#5b6379}
+  .editor-code{flex:1;display:flex;flex-direction:column;background:#14161f;min-width:0}
+  .tabs{height:35px;display:flex;align-items:stretch;background:#0f1117;border-bottom:1px solid rgba(255,255,255,.05)}
+  .tab{display:flex;align-items:center;gap:7px;padding:0 15px;font-size:11px;color:#717991;border-right:1px solid rgba(255,255,255,.05)}
+  .tab.active{background:#14161f;color:#cdd2e0;box-shadow:inset 0 1px 0 #8b6cff}
+  .tab i{width:6px;height:6px;border-radius:2px;background:#4e9af1}
+  .code{flex:1;padding:12px 0;font-family:var(--mono);font-size:12px;line-height:21px;overflow:hidden}
+  .cl{display:flex;align-items:center;white-space:pre}
+  .ln{width:36px;text-align:right;margin-right:16px;color:#464d5f;font-size:10.5px;user-select:none}
+  .tk-key{color:#c792ea}.tk-fn{color:#82aaff}.tk-str{color:#a6dd82}.tk-num{color:#f6a26b}.tk-com{color:#596073;font-style:italic}.tk-type{color:#7fd6c8}.tk-var{color:#d7dcea}.tk-op{color:#7f879b}
+  .editor-status{height:24px;display:flex;align-items:center;gap:16px;padding:0 12px;background:#101219;border-top:1px solid rgba(255,255,255,.05);font-size:9.5px;color:#646b7e}
+  .editor-status span:last-child{margin-left:auto;color:#7f71c9}
+
+  .dash-win{left:922px;top:104px;width:416px;height:330px}
+  .dash-body{padding:15px 16px 12px;height:calc(100% - 38px);display:flex;flex-direction:column;gap:11px}
+  .dash-head{display:flex;align-items:center;gap:8px}
+  .dash-head b{font-size:13px;font-weight:600;color:#dfe3ee}
+  .dash-head span{font-size:9.5px;color:#6d7488;border:1px solid var(--line);border-radius:5px;padding:2px 5px}
+  .dash-head em{margin-left:auto;font-style:normal;font-size:9.5px;color:#7b8296}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stat{background:#181a24;border:1px solid rgba(255,255,255,.05);border-radius:9px;padding:8px 10px}
+  .stat span{font-size:9px;color:#6b7286;display:block}
+  .stat b{font-size:15px;font-weight:600;color:#e4e7f1;letter-spacing:-.01em}
+  .stat b small{font-size:9px;font-weight:400;color:#7f8699;margin-left:3px}
+  .chart{height:88px;display:flex;align-items:flex-end;gap:6px;padding:6px 2px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .chart i{flex:1;border-radius:3px 3px 0 0;background:linear-gradient(180deg,rgba(139,108,255,.95),rgba(139,108,255,.25));min-height:8px}
+  .chart i:nth-child(odd){background:linear-gradient(180deg,rgba(56,212,232,.8),rgba(56,212,232,.16))}
+  .recent{display:flex;align-items:center;gap:9px;padding-top:1px}
+  .recent-thumb{width:36px;height:23px;border-radius:4px;background:linear-gradient(135deg,#3b2f76,#152235);border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden}
+  .recent-thumb::after{content:"";position:absolute;left:6px;top:6px;width:18px;height:2px;background:rgba(255,255,255,.35);box-shadow:0 5px 0 rgba(255,255,255,.14)}
+  .recent b{font-size:10px;color:#b9bfce;font-weight:500;display:block}
+  .recent span{font-size:9px;color:#656c7f}
+  .recent svg{margin-left:auto;width:14px;height:14px;color:#636a7d}
+
+  .screen{position:absolute;inset:0;z-index:6;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s ease,visibility .28s}
+  .screen.active{opacity:1;visibility:visible;pointer-events:auto}
+  .screen.active .rise{animation:rise .38s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes rise{from{opacity:0;translate:0 12px;scale:.988}to{opacity:1;translate:0 0;scale:1}}
+  .scrim{position:absolute;inset:0;background:rgba(5,7,12,.5);backdrop-filter:blur(3px) saturate(.92)}
+  .scrim.heavy{background:rgba(5,7,12,.62);backdrop-filter:blur(6px) saturate(.85)}
+  .main-scrim{background:radial-gradient(ellipse at 50% 44%,rgba(5,7,12,.12) 0%,rgba(5,7,12,.5) 70%,rgba(5,7,12,.68) 100%);backdrop-filter:blur(1.5px) saturate(.95)}
+
+  .main-panel{
+    position:absolute;left:50%;top:146px;width:682px;transform:translateX(-50%);
+    padding:22px;border-radius:24px;
+    background:linear-gradient(180deg,rgba(28,29,40,.97),rgba(18,19,27,.985));
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:0 48px 120px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(0,0,0,.35);
+  }
+  .main-panel::before{content:"";position:absolute;inset:0;border-radius:24px;background:radial-gradient(500px 150px at 30% -20%,rgba(139,108,255,.18),transparent 70%);pointer-events:none}
+  .panel-head{display:flex;align-items:center;gap:12px;position:relative}
+  .app-mark{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#a98bff,#7c5cff 55%,#5c3ff0);box-shadow:0 10px 26px rgba(124,92,255,.32),inset 0 0 0 1px rgba(255,255,255,.2)}
+  .app-mark svg{width:24px;height:24px;color:#fff}
+  .app-name h2{font-size:16px;font-weight:650;letter-spacing:.005em;display:flex;align-items:center;gap:8px}
+  .app-name h2 b{font-size:9px;font-weight:500;color:#b6a7ff;background:rgba(139,108,255,.16);border:1px solid rgba(139,108,255,.22);padding:2px 6px;border-radius:5px;letter-spacing:.06em}
+  .app-name p{font-size:11px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:7px}
+  .app-name p i{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(61,220,151,.1)}
+  .win-btns{margin-left:auto;display:flex;gap:6px}
+  .win-btn{width:29px;height:29px;border-radius:8px;display:grid;place-items:center;color:#767d8f;transition:.16s}
+  .win-btn:hover{background:rgba(255,255,255,.07);color:#e4e7f0}
+  .win-btn svg{width:14px;height:14px}
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin:20px 1px 10px;position:relative}
+  .section-head span{font-size:11.5px;color:#a4aabc;font-weight:500;letter-spacing:.03em}
+  .section-head em{font-style:normal;font-size:10px;color:#626a7e}
+  .source-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;position:relative}
+  .source-card{
+    position:relative;height:108px;padding:13px 13px 11px;text-align:left;border-radius:14px;
+    background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.015));
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;flex-direction:column;justify-content:flex-end;gap:2px;
+    transition:border-color .18s,background .18s,transform .18s,box-shadow .18s;
+  }
+  .source-card:hover{border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.045);transform:translateY(-1px)}
+  .source-card .tile{position:absolute;left:13px;top:12px;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.06);color:#a8aec0}
+  .source-card .tile svg{width:17px;height:17px}
+  .source-card[data-kind="screen"] .tile{background:rgba(139,108,255,.15);color:#b9a5ff}
+  .source-card[data-kind="region"] .tile{background:rgba(56,212,232,.13);color:#7ee6f2}
+  .source-card[data-kind="window"] .tile{background:rgba(96,165,250,.13);color:#93c5fd}
+  .source-card[data-kind="app"] .tile{background:rgba(255,180,84,.13);color:#ffc97a}
+  .source-card[data-kind="audio"] .tile{background:rgba(61,220,151,.12);color:#7ceab9}
+  .source-card[data-kind="mobile"] .tile{background:rgba(255,99,132,.12);color:#ff9fb1}
+  .source-card b{font-size:13px;font-weight:600;color:#e2e5ef;letter-spacing:.01em}
+  .source-card small{font-size:10px;color:#7c8397;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .source-card .pick{position:absolute;right:11px;top:11px;width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.16);display:grid;place-items:center;color:transparent;transition:.16s}
+  .source-card .pick svg{width:11px;height:11px;stroke-width:2.4}
+  .source-card.is-active{border-color:rgba(139,108,255,.75);background:linear-gradient(180deg,rgba(139,108,255,.16),rgba(139,108,255,.055));box-shadow:0 0 0 3px rgba(139,108,255,.09),inset 0 0 0 1px rgba(255,255,255,.05)}
+  .source-card.is-active .pick{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(139,108,255,.45)}
+  .source-card.disabled{opacity:.45;cursor:not-allowed}
+  .source-card.disabled:hover{transform:none;border-color:rgba(255,255,255,.07);background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.015))}
+  .source-card .soon{position:absolute;right:10px;top:10px;font-size:8.5px;color:#9aa1b4;border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 5px;letter-spacing:.04em}
+
+  .quick-row{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr;gap:8px;margin-top:12px;position:relative}
+  .qchip{
+    display:flex;align-items:center;gap:8px;height:40px;padding:0 11px;border-radius:10px;
+    background:#101118;border:1px solid rgba(255,255,255,.07);color:#8b92a5;font-size:11px;
+    transition:.16s;white-space:nowrap;min-width:0;
+  }
+  .qchip:hover{border-color:rgba(255,255,255,.14);color:#c5cad8}
+  .qchip svg{width:15px;height:15px;flex:none}
+  .qchip b{font-weight:500;color:#c9cede;font-size:11px;overflow:hidden;text-overflow:ellipsis}
+  .qchip .sub{font-size:9.5px;color:#6b7387;margin-left:auto;overflow:hidden;text-overflow:ellipsis}
+  .qchip .led{margin-left:auto;width:22px;height:12px;border-radius:99px;background:#2b2e3a;position:relative;flex:none;transition:.16s}
+  .qchip .led::after{content:"";position:absolute;left:2px;top:2px;width:8px;height:8px;border-radius:50%;background:#737b8f;transition:.16s}
+  .qchip.on{border-color:rgba(139,108,255,.32);background:rgba(139,108,255,.08);color:#c9bcff}
+  .qchip.on b{color:#e2dcff}
+  .qchip.on .led{background:var(--accent)}
+  .qchip.on .led::after{left:12px;background:#fff}
+  .qchip .bars{display:flex;align-items:center;gap:2px;height:14px;margin-left:auto}
+  .qchip .bars i{width:2px;border-radius:2px;background:var(--accent);height:4px;animation:bar 1s ease-in-out infinite}
+  .qchip .bars i:nth-child(2){animation-delay:.12s}
+  .qchip .bars i:nth-child(3){animation-delay:.25s}
+  .qchip .bars i:nth-child(4){animation-delay:.38s}
+  @keyframes bar{0%,100%{height:4px;opacity:.5}50%{height:12px;opacity:1}}
+
+  .output-row{display:flex;align-items:center;gap:10px;margin-top:10px;position:relative}
+  .path-chip{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:8px;font-size:10.5px;color:#8b92a5;border:1px solid transparent;transition:.16s;min-width:0}
+  .path-chip:hover{background:rgba(255,255,255,.04);border-color:var(--line)}
+  .path-chip svg{width:14px;height:14px;color:#707890}
+  .path-chip b{font-weight:400;color:#a7aec0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .path-chip .chev{width:12px;height:12px;color:#5f6678}
+  .format-hint{margin-left:auto;font-size:9.5px;color:#656d80;display:flex;align-items:center;gap:5px}
+  .format-hint i{width:3px;height:3px;border-radius:50%;background:#474e60}
+
+  .panel-foot{display:flex;align-items:center;gap:12px;padding-top:17px;margin-top:15px;border-top:1px solid rgba(255,255,255,.06);position:relative}
+  .delay-chip{display:flex;align-items:center;gap:7px;height:42px;padding:0 11px;border-radius:10px;border:1px solid rgba(255,255,255,.07);background:#101118;font-size:10.5px;color:#7c8498;transition:.16s}
+  .delay-chip:hover{border-color:rgba(255,255,255,.14);color:#b9bfcf}
+  .delay-chip svg{width:14px;height:14px}
+  .delay-chip b{color:#d3d8e5;font-weight:600;font-size:11px;margin-left:2px}
+  .delay-chip .chev{width:11px;height:11px;color:#5f6678}
+  .record-btn{
+    margin-left:auto;display:flex;align-items:center;justify-content:center;gap:9px;height:46px;padding:0 22px;border-radius:12px;
+    background:linear-gradient(180deg,#ff5f70,#ea3a4f);color:#fff;font-size:13px;font-weight:600;letter-spacing:.02em;
+    box-shadow:0 10px 26px rgba(255,77,94,.28),inset 0 1px 0 rgba(255,255,255,.25);
+    transition:transform .16s,box-shadow .16s,filter .16s;
+  }
+  .record-btn:hover{transform:translateY(-1px);filter:brightness(1.05);box-shadow:0 14px 34px rgba(255,77,94,.36),inset 0 1px 0 rgba(255,255,255,.25)}
+  .record-btn:active{transform:translateY(0)}
+  .record-btn .dot{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.17)}
+  .record-btn.compact{height:38px;padding:0 16px;font-size:11.5px;border-radius:9px;margin-left:0}
+  .panel-tip{margin-top:12px;text-align:center;font-size:9.5px;color:#565e72;position:relative}
+  .panel-tip kbd{font-family:var(--mono);font-size:9px;color:#7e8598;border:1px solid rgba(255,255,255,.09);border-radius:4px;padding:1px 4px;background:rgba(255,255,255,.03)}
+
+  .picker{
+    position:absolute;left:50%;top:108px;width:1068px;transform:translateX(-50%);
+    border-radius:20px;overflow:hidden;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,rgba(25,26,36,.985),rgba(16,17,24,.99));
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:0 54px 130px rgba(0,0,0,.68),inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  .picker-head{height:66px;display:flex;align-items:center;gap:13px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.065);background:rgba(255,255,255,.012)}
+  .icon-btn{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#858c9f;transition:.16s;flex:none}
+  .icon-btn:hover{background:rgba(255,255,255,.07);color:#e2e6f0}
+  .icon-btn svg{width:16px;height:16px}
+  .icon-btn.sm{width:30px;height:30px;border-radius:8px}
+  .icon-btn.sm svg{width:14px;height:14px}
+  .picker-title{min-width:0}
+  .picker-title h2{font-size:13.5px;font-weight:600;letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+  .picker-title p{font-size:10px;color:#747b8f;margin-top:3px;white-space:nowrap}
+  .picker-tabs{display:flex;gap:3px;margin-left:14px;padding:3px;background:#0e0f15;border:1px solid rgba(255,255,255,.07);border-radius:9px}
+  .picker-tabs button{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;font-size:10.5px;color:#7d8498;transition:.15s;white-space:nowrap}
+  .picker-tabs button em{font-style:normal;font-size:8.5px;color:#5d6478;background:rgba(255,255,255,.06);border-radius:4px;padding:1px 4px}
+  .picker-tabs button:hover{color:#cbd0de}
+  .picker-tabs button.active{background:#272a36;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+  .picker-tabs button.active em{color:#b6a8ff;background:rgba(139,108,255,.16)}
+  .head-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+  .search{display:flex;align-items:center;gap:7px;width:186px;height:32px;padding:0 10px;border-radius:8px;background:#0f1016;border:1px solid rgba(255,255,255,.07);color:#5f6779;transition:.16s}
+  .search:focus-within{border-color:rgba(139,108,255,.45);box-shadow:0 0 0 3px rgba(139,108,255,.08)}
+  .search svg{width:14px;height:14px;flex:none}
+  .search input{width:100%;font-size:10.5px;color:#cfd4e1}
+  .search input::placeholder{color:#5c6376}
+  .picker-body{display:flex;min-height:0;height:536px}
+  .source-list{width:348px;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;background:rgba(255,255,255,.008)}
+  .list-head{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 9px;font-size:10px;color:#6d7488;letter-spacing:.04em}
+  .list-head button{font-size:9.5px;color:#8d94a8;display:flex;align-items:center;gap:4px;padding:3px 5px;border-radius:5px}
+  .list-head button:hover{background:rgba(255,255,255,.05);color:#d3d8e5}
+  .list-head button svg{width:11px;height:11px}
+  .source-items{padding:0 10px 12px;display:flex;flex-direction:column;gap:5px;overflow:auto}
+  .source-items::-webkit-scrollbar{width:4px}
+  .source-items::-webkit-scrollbar-thumb{background:#2b2f3d;border-radius:99px}
+  .list-note{margin-top:auto;display:flex;align-items:flex-start;gap:7px;padding:12px 16px;border-top:1px solid rgba(255,255,255,.05);font-size:9px;line-height:1.55;color:#60687b}
+  .list-note svg{width:12px;height:12px;color:#6d7488;margin-top:1px}
+  .source-item{display:flex;align-items:center;gap:10px;padding:9px;border-radius:10px;border:1px solid transparent;text-align:left;transition:.15s}
+  .source-item:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.06)}
+  .source-item.selected{background:rgba(139,108,255,.1);border-color:rgba(139,108,255,.5);box-shadow:0 0 0 2px rgba(139,108,255,.07)}
+  .source-thumb{width:78px;height:48px;border-radius:6px;background:#0c0e14;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden;flex:none;display:grid;place-items:center}
+  .source-thumb .mini{width:58%;height:54%;border-radius:3px;border:1px solid rgba(255,255,255,.22);background:linear-gradient(135deg,rgba(139,108,255,.25),rgba(56,212,232,.1))}
+  .source-thumb .mini::before{content:"";display:block;height:6px;background:rgba(255,255,255,.14);border-bottom:1px solid rgba(255,255,255,.08)}
+  .source-thumb.display .monitor{width:62%;aspect-ratio:16/10;border:1px solid rgba(255,255,255,.28);border-radius:3px;position:relative;background:linear-gradient(160deg,rgba(139,108,255,.22),rgba(56,212,232,.08))}
+  .source-thumb.display .monitor::before{content:"";position:absolute;left:50%;bottom:-6px;width:1px;height:5px;background:rgba(255,255,255,.28)}
+  .source-thumb.display .monitor::after{content:"";position:absolute;left:50%;bottom:-7px;width:14px;height:1px;background:rgba(255,255,255,.28);transform:translateX(-50%)}
+  .source-thumb.window{background:linear-gradient(135deg,#171126,#0c1420)}
+  .source-thumb.app{background:linear-gradient(135deg,#221a3a,#14202c)}
+  .appletter{width:25px;height:25px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(145deg,#4e8cf7,#2c5fd0);color:#fff;font-size:12px;font-weight:700;box-shadow:0 4px 10px rgba(0,0,0,.3)}
+  .appletter.figma{background:linear-gradient(145deg,#ff8a5c,#ff4d6d)}
+  .appletter.chrome{background:linear-gradient(145deg,#4ade80,#22a3ff 55%,#facc15);color:#0b1020}
+  .source-meta{min-width:0;display:flex;flex-direction:column;gap:3px}
+  .source-meta b{font-size:11.5px;font-weight:500;color:#d8dce8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .source-meta span{font-size:9.5px;color:#6d7488;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pick-check{margin-left:auto;width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:transparent;flex:none}
+  .pick-check svg{width:10px;height:10px;stroke-width:2.6}
+  .source-item.selected .pick-check{background:var(--accent);border-color:var(--accent);color:#fff}
+  .preview-pane{flex:1;padding:16px 18px 14px;display:flex;flex-direction:column;gap:11px;min-width:0}
+  .preview-top{display:flex;align-items:center;gap:8px;font-size:10px;color:#7f869a}
+  .preview-top b{font-weight:500;color:#bcc2d2}
+  .live-badge{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:9px;color:#7ceab9;background:rgba(61,220,151,.08);border:1px solid rgba(61,220,151,.18);border-radius:5px;padding:3px 7px}
+  .live-badge i{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(61,220,151,.1)}
+  .preview-stage{position:relative;flex:1;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#16102f,#0b1a22);border:1px solid rgba(255,255,255,.09);display:grid;place-items:center}
+  .preview-stage::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:52px 52px;mask-image:radial-gradient(ellipse at center,#000,transparent 85%);-webkit-mask-image:radial-gradient(ellipse at center,#000,transparent 85%)}
+  .pv-window{position:relative;width:72%;height:72%;border-radius:8px;overflow:hidden;background:#12141d;border:1px solid rgba(255,255,255,.16);box-shadow:0 26px 60px rgba(0,0,0,.55),0 0 0 6px rgba(139,108,255,.1)}
+  .pv-bar{height:24px;display:flex;align-items:center;gap:6px;padding:0 9px;background:#1a1c26;border-bottom:1px solid rgba(255,255,255,.06)}
+  .pv-bar i{width:5px;height:5px;border-radius:50%;background:#454b5d}
+  .pv-bar em{margin-left:6px;font-style:normal;font-size:8.5px;color:#8d94a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pv-body{display:flex;height:calc(100% - 24px)}
+  .pv-side{width:56px;background:#101219;border-right:1px solid rgba(255,255,255,.05)}
+  .pv-side i{display:block;height:4px;border-radius:2px;background:#2b3040;margin:8px 8px 0}
+  .pv-side i:nth-child(1){width:30px;margin-top:12px;background:#453b6b}
+  .pv-side i:nth-child(2){width:36px}
+  .pv-side i:nth-child(3){width:24px}
+  .pv-side i:nth-child(4){width:32px}
+  .pv-code{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:7px}
+  .pv-code i{height:4px;border-radius:2px;background:#2c3141}
+  .pv-code i:nth-child(1){width:58%;background:#5b4b92}
+  .pv-code i:nth-child(2){width:42%;background:#355f5d;margin-left:10px}
+  .pv-code i:nth-child(3){width:70%;background:#3a3f52;margin-left:10px}
+  .pv-code i:nth-child(4){width:34%;background:#5f4437;margin-left:20px}
+  .pv-code i:nth-child(5){width:52%;background:#3a3f52;margin-left:20px}
+  .pv-code i:nth-child(6){width:26%;background:#355f5d;margin-left:10px}
+  .pv-code i:nth-child(7){width:46%;background:#5b4b92}
+  .pv-size{position:absolute;right:14px;bottom:13px;font-family:var(--mono);font-size:9px;color:#cfd4e2;background:rgba(11,13,20,.76);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:3px 7px;backdrop-filter:blur(8px)}
+  .preview-foot{display:flex;align-items:center;gap:10px;font-size:10px;color:#6e7589}
+  .preview-foot b{color:#b9bfd0;font-weight:500;font-size:10.5px}
+  .preview-foot .src-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  .preview-foot span:last-child{margin-left:auto;font-family:var(--mono);font-size:9px;color:#5e6679}
+
+  .picker-foot{height:72px;display:flex;align-items:center;gap:8px;padding:0 14px;border-top:1px solid rgba(255,255,255,.07);background:rgba(10,11,16,.6)}
+  .param{display:flex;align-items:center;gap:6px;height:34px;padding:0 9px;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:#0f1016;font-size:10px;color:#7c8498;transition:.15s;white-space:nowrap}
+  .param:hover{border-color:rgba(255,255,255,.16);color:#b9bfce}
+  .param b{font-weight:500;color:#d3d8e5;font-size:10.5px}
+  .param svg{width:10px;height:10px;color:#5f6678}
+  .param q{quotes:none;font-size:8.5px;color:#61697c;border-left:1px solid rgba(255,255,255,.08);padding-left:6px;margin-left:1px}
+  .v-line{width:1px;height:24px;background:rgba(255,255,255,.08);margin:0 3px;flex:none}
+  .picker-foot .qchip{height:34px;padding:0 9px;font-size:9.5px;background:#0f1016;border-radius:8px;flex:none}
+  .picker-foot .qchip svg{width:13px;height:13px}
+  .picker-foot .qchip b{font-size:9.5px}
+  .estimate{margin-left:auto;font-size:9px;color:#5f677a;white-space:nowrap;display:flex;align-items:center;gap:4px}
+  .estimate i{width:3px;height:3px;border-radius:50%;background:#454c5e}
+  .picker-foot .record-btn.compact{margin-left:8px}
+
+  .region-selection{
+    position:absolute;left:94px;top:136px;width:792px;height:592px;border-radius:5px;
+    border:1.5px solid rgba(255,255,255,.96);
+    box-shadow:0 0 0 2400px rgba(4,6,12,.66),0 0 0 1px rgba(139,108,255,.55),0 26px 80px rgba(0,0,0,.35);
+  }
+  .rg-guide{position:absolute;pointer-events:none;background:rgba(255,255,255,.125)}
+  .rg-guide.v{top:0;bottom:0;width:1px}
+  .rg-guide.h{left:0;right:0;height:1px}
+  .handle{position:absolute;width:9px;height:9px;border-radius:2px;background:#fff;border:1px solid #8b6cff;box-shadow:0 1px 4px rgba(0,0,0,.45);pointer-events:none}
+  .handle.n{left:50%;top:-5px;transform:translateX(-50%)}.handle.s{left:50%;bottom:-5px;transform:translateX(-50%)}
+  .handle.e{right:-5px;top:50%;transform:translateY(-50%)}.handle.w{left:-5px;top:50%;transform:translateY(-50%)}
+  .handle.ne{right:-5px;top:-5px}.handle.nw{left:-5px;top:-5px}.handle.se{right:-5px;bottom:-5px}.handle.sw{left:-5px;bottom:-5px}
+  .region-badge{
+    position:absolute;left:-1px;top:-40px;display:flex;align-items:center;gap:8px;height:30px;padding:0 9px;
+    border-radius:7px;background:rgba(16,17,25,.9);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(12px);
+    font-family:var(--mono);font-size:10.5px;color:#f0f2f8;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  .region-badge svg{width:12px;height:12px;color:#b6a7ff}
+  .region-badge em{font-style:normal;font-family:var(--sans);font-size:9px;color:#8c93a7;border-left:1px solid rgba(255,255,255,.12);padding-left:8px}
+  .region-badge .snap{display:flex;align-items:center;gap:4px;font-family:var(--sans);font-size:8.5px;color:#7ceab9}
+  .region-badge .snap i{width:4px;height:4px;border-radius:50%;background:var(--green)}
+  .region-corner{position:absolute;right:8px;bottom:7px;font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.55)}
+  .region-hint{
+    position:absolute;left:50%;top:26px;transform:translateX(-50%);display:flex;align-items:center;gap:11px;
+    height:44px;padding:0 16px;border-radius:12px;background:rgba(15,16,24,.82);border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(16px);box-shadow:0 18px 50px rgba(0,0,0,.4);font-size:10.5px;color:#b9bfd0;white-space:nowrap;
+  }
+  .region-hint svg{width:15px;height:15px;color:#b6a7ff}
+  .region-hint b{color:#eceef6;font-weight:500}
+  .region-hint kbd{font-family:var(--mono);font-size:8.5px;color:#8d94a7;border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 5px;background:rgba(255,255,255,.04)}
+  .region-hint .vl{width:1px;height:16px;background:rgba(255,255,255,.12)}
+  .region-toolbar{
+    position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
+    display:flex;align-items:center;gap:7px;height:68px;padding:0 11px;border-radius:16px;
+    background:rgba(15,16,24,.9);border:1px solid rgba(255,255,255,.11);backdrop-filter:blur(20px);
+    box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);white-space:nowrap;
+  }
+  .tool-btn{display:flex;align-items:center;gap:6px;height:38px;padding:0 10px;border-radius:9px;font-size:10px;color:#8e95a8;transition:.15s}
+  .tool-btn:hover{background:rgba(255,255,255,.06);color:#dfe3ee}
+  .tool-btn svg{width:14px;height:14px}
+  .region-toolbar .param{height:36px}
+  .region-toolbar .qchip{height:36px;padding:0 9px;font-size:9.5px;background:#0e0f15;border-radius:8px;flex:none}
+  .region-toolbar .qchip svg{width:13px;height:13px}
+  .region-toolbar .qchip b{font-size:9.5px}
+  .region-toolbar .record-btn{height:44px;padding:0 18px;font-size:12px;border-radius:10px;margin-left:2px}
+  .region-toolbar .tool-btn.cancel:hover{color:#ff9da7;background:rgba(255,77,94,.1)}
+
+  .rec-frame{position:absolute;inset:9px;border:1.5px solid rgba(255,77,94,.5);border-radius:15px;pointer-events:none;box-shadow:inset 0 0 50px rgba(255,77,94,.05)}
+  .rec-chip{position:absolute;top:28px;display:flex;align-items:center;gap:7px;height:34px;padding:0 11px;border-radius:8px;background:rgba(13,14,21,.72);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px);font-size:10px;color:#a6adbf;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  .rec-chip svg{width:13px;height:13px;color:#8d94a7}
+  .rec-chip b{font-weight:500;color:#d9dde9}
+  .rec-chip.left{left:28px}
+  .rec-chip.right{right:28px}
+  .rec-chip .sep{width:1px;height:12px;background:rgba(255,255,255,.12)}
+  .hud{
+    position:absolute;left:50%;top:26px;transform:translateX(-50%);display:flex;align-items:center;gap:11px;
+    height:54px;padding:0 10px 0 17px;border-radius:99px;
+    background:linear-gradient(180deg,rgba(30,27,44,.94),rgba(18,17,28,.96));
+    border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(20px);
+    box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .hud .rec-dot{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(255,77,94,.14);animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 4px rgba(255,77,94,.14)}50%{opacity:.55;box-shadow:0 0 0 7px rgba(255,77,94,.05)}}
+  .hud .rec-label{font-size:9px;font-weight:700;letter-spacing:.16em;color:#ff8995}
+  .hud .rec-time{font-family:var(--mono);font-size:15px;font-weight:600;color:#f2f3f8;letter-spacing:.04em;min-width:82px;text-align:center}
+  .hud .hdiv{width:1px;height:22px;background:rgba(255,255,255,.1)}
+  .hud .mic-meter{display:flex;align-items:center;gap:2px;height:18px}
+  .hud .mic-meter i{width:2px;border-radius:2px;background:#a98bff;height:5px;animation:bar 1.1s ease-in-out infinite}
+  .hud .mic-meter i:nth-child(2){animation-delay:.1s}.hud .mic-meter i:nth-child(3){animation-delay:.22s}.hud .mic-meter i:nth-child(4){animation-delay:.35s}.hud .mic-meter i:nth-child(5){animation-delay:.46s}
+  .hud.paused .mic-meter i{animation-play-state:paused;opacity:.35}
+  .hud.paused .rec-dot{animation-play-state:paused;background:#e0b04a;box-shadow:0 0 0 4px rgba(224,176,74,.12)}
+  .hud.paused .rec-label{color:#e0b04a}
+  .hud .hbtn{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.07);color:#cdd2df;transition:.15s}
+  .hud .hbtn:hover{background:rgba(255,255,255,.13);color:#fff}
+  .hud .hbtn svg{width:15px;height:15px}
+  .hud .hbtn.stop{background:linear-gradient(180deg,#ff5a6b,#e6354a);color:#fff;box-shadow:0 5px 16px rgba(255,77,94,.32)}
+  .hud .hbtn.stop:hover{filter:brightness(1.08)}
+  .hud .hbtn.cam{color:#b6a7ff}
+  .hud .hbtn.pause svg{width:14px;height:14px}
+
+  .cam-bubble{
+    position:absolute;right:38px;bottom:38px;width:216px;height:152px;border-radius:16px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.16);box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.3);
+    background:linear-gradient(150deg,#2c2450,#131526 55%,#0d1018);
+  }
+  .cam-bubble::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 60px rgba(0,0,0,.4);pointer-events:none}
+  .cam-glow{position:absolute;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(139,108,255,.5),transparent 65%);left:-30px;top:-50px;filter:blur(14px)}
+  .cam-glow.b{background:radial-gradient(circle,rgba(40,210,235,.3),transparent 65%);left:auto;right:-60px;top:60px}
+  .cam-person{position:absolute;left:50%;bottom:-24px;transform:translateX(-50%);width:130px;height:140px}
+  .cam-person .head{position:absolute;left:50%;top:8px;transform:translateX(-50%);width:48px;height:56px;border-radius:46% 46% 48% 48%;background:linear-gradient(160deg,#cbb7e8,#8f7bb8);box-shadow:inset -6px -8px 14px rgba(41,28,72,.35)}
+  .cam-person .head::before{content:"";position:absolute;left:-3px;top:-4px;width:54px;height:26px;border-radius:50% 50% 40% 40%;background:linear-gradient(160deg,#3a2b58,#1c1730);transform:rotate(-4deg)}
+  .cam-person .body{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:126px;height:82px;border-radius:60px 60px 16px 16px;background:linear-gradient(160deg,#4a3b73,#231b3e 60%,#161226);box-shadow:inset 0 10px 26px rgba(255,255,255,.06)}
+  .cam-label{position:absolute;left:10px;top:10px;display:flex;align-items:center;gap:5px;height:22px;padding:0 7px;border-radius:6px;background:rgba(9,10,16,.55);border:1px solid rgba(255,255,255,.1);font-size:8.5px;color:#cdd2df;backdrop-filter:blur(8px)}
+  .cam-label i{width:4px;height:4px;border-radius:50%;background:var(--green)}
+  .cam-pip{position:absolute;right:9px;bottom:9px;font-size:8px;color:#b7bdcc;background:rgba(9,10,16,.55);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:2px 5px;backdrop-filter:blur(8px)}
+  .cursor-ring{position:absolute;left:708px;top:484px;width:52px;height:52px;border-radius:50%;border:1.5px solid rgba(255,255,255,.9);box-shadow:0 0 0 8px rgba(139,108,255,.22),0 0 30px rgba(139,108,255,.45)}
+  .cursor-ring::before{content:"";position:absolute;inset:16px;border-radius:50%;background:rgba(139,108,255,.8)}
+  .cursor-ring::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:#fff}
+  .cursor-tip{position:absolute;left:748px;top:540px;font-size:8.5px;color:#d9ddea;background:rgba(13,14,21,.8);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:4px 7px;backdrop-filter:blur(8px);white-space:nowrap}
+  .rec-hint{position:absolute;left:50%;bottom:32px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:8px;background:rgba(13,14,21,.7);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px);font-size:9.5px;color:#8f96a9;white-space:nowrap}
+  .rec-hint i{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.6s infinite}
+  .rec-hint kbd{font-family:var(--mono);font-size:8.5px;color:#c7ccda;border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 5px;background:rgba(255,255,255,.04)}
+  .rec-order{position:absolute;left:38px;bottom:38px;display:flex;align-items:center;gap:7px;font-size:9px;color:#7d8497;background:rgba(13,14,21,.6);border:1px solid rgba(255,255,255,.09);border-radius:7px;padding:6px 9px;backdrop-filter:blur(10px)}
+  .rec-order svg{width:12px;height:12px;color:#8fd6a5}
+
+  .done-toast{
+    position:absolute;left:50%;top:28px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
+    height:46px;padding:0 16px;border-radius:11px;background:rgba(15,17,24,.9);border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(16px);box-shadow:0 20px 50px rgba(0,0,0,.4);font-size:10.5px;color:#a8aec0;white-space:nowrap;
+  }
+  .done-toast .ok{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:rgba(61,220,151,.13);color:var(--green)}
+  .done-toast .ok svg{width:12px;height:12px;stroke-width:2.5}
+  .done-toast b{color:#e7eaf2;font-weight:500}
+  .done-toast span{color:#7b8296}
+  .preview-card{
+    position:absolute;right:40px;bottom:40px;width:344px;border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(26,27,37,.985),rgba(16,17,24,.99));
+    border:1px solid rgba(255,255,255,.11);box-shadow:0 40px 100px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .pc-thumb{position:relative;height:190px;background:
+    radial-gradient(320px 180px at 20% 20%,rgba(124,92,255,.4),transparent 65%),
+    radial-gradient(240px 150px at 85% 80%,rgba(40,210,235,.2),transparent 65%),
+    linear-gradient(135deg,#1a1333,#0d1720);overflow:hidden;border-bottom:1px solid rgba(255,255,255,.07)}
+  .pc-thumb::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:42px 42px;mask-image:radial-gradient(ellipse at center,#000,transparent 85%);-webkit-mask-image:radial-gradient(ellipse at center,#000,transparent 85%)}
+  .pc-mini{position:absolute;left:44px;top:40px;width:258px;height:150px;border-radius:7px;border:1px solid rgba(255,255,255,.2);background:#12141d;box-shadow:0 16px 38px rgba(0,0,0,.5);overflow:hidden}
+  .pc-mini-bar{height:18px;background:#1b1d27;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:4px;padding:0 7px}
+  .pc-mini-bar i{width:4px;height:4px;border-radius:50%;background:#484e60}
+  .pc-mini-body{display:flex;height:calc(100% - 18px)}
+  .pc-mini-side{width:48px;background:#101219;border-right:1px solid rgba(255,255,255,.05)}
+  .pc-mini-side i{display:block;height:3px;width:28px;background:#2b3040;margin:7px 0 0 9px;border-radius:2px}
+  .pc-mini-side i:first-child{margin-top:12px;background:#4b3d78;width:32px}
+  .pc-mini-code{flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+  .pc-mini-code i{height:4px;border-radius:2px;background:#2d3242}
+  .pc-mini-code i:nth-child(1){width:56%;background:#5c4c93}
+  .pc-mini-code i:nth-child(2){width:38%;background:#355f5d;margin-left:8px}
+  .pc-mini-code i:nth-child(3){width:66%;margin-left:8px}
+  .pc-mini-code i:nth-child(4){width:30%;background:#5f4437;margin-left:18px}
+  .pc-mini-code i:nth-child(5){width:48%;margin-left:18px}
+  .pc-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:rgba(14,15,22,.66);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(10px);color:#fff;box-shadow:0 12px 30px rgba(0,0,0,.4);transition:.18s}
+  .pc-play:hover{transform:translate(-50%,-50%) scale(1.06);background:rgba(139,108,255,.85);border-color:rgba(255,255,255,.35)}
+  .pc-play svg{width:19px;height:19px;margin-left:2px}
+  .pc-chip{position:absolute;left:12px;top:12px;font-size:8px;color:#d5d9e4;background:rgba(10,11,17,.64);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:3px 6px;backdrop-filter:blur(8px);letter-spacing:.03em}
+  .pc-dur{position:absolute;right:12px;bottom:11px;font-family:var(--mono);font-size:9px;color:#eef0f6;background:rgba(10,11,17,.66);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:3px 6px;backdrop-filter:blur(8px)}
+  .pc-body{padding:14px 15px 15px}
+  .pc-name{font-size:11.5px;color:#e1e5ef;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pc-meta{font-size:9.5px;color:#767d91;margin-top:4px;display:flex;align-items:center;gap:6px}
+  .pc-meta i{width:3px;height:3px;border-radius:50%;background:#4b5264}
+  .pc-actions{display:flex;align-items:center;gap:6px;margin-top:13px}
+  .pc-playbtn{height:34px;padding:0 15px;border-radius:8px;background:linear-gradient(180deg,#8f72ff,#7455f5);color:#fff;font-size:10.5px;font-weight:550;box-shadow:0 6px 16px rgba(124,92,255,.25);display:flex;align-items:center;gap:6px;transition:.15s}
+  .pc-playbtn:hover{filter:brightness(1.07)}
+  .pc-playbtn svg{width:11px;height:11px}
+  .pc-actions .icon-btn{width:34px;height:34px;background:#101118;border:1px solid rgba(255,255,255,.07);border-radius:8px;color:#8b92a5}
+  .pc-actions .icon-btn:hover{background:#1b1d27;color:#dfe3ee;border-color:rgba(255,255,255,.14)}
+  .pc-actions .icon-btn.danger:hover{color:#ff8b97;border-color:rgba(255,77,94,.3);background:rgba(255,77,94,.08)}
+  .pc-auto{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.06);overflow:hidden}
+  .pc-auto::after{content:"";display:block;height:100%;width:100%;background:linear-gradient(90deg,#8b6cff,#38d4e8);transform-origin:left;animation:countdown 6s linear infinite}
+  @keyframes countdown{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+  .settings-win{
+    position:absolute;left:50%;top:116px;width:1000px;height:668px;transform:translateX(-50%);
+    display:flex;border-radius:20px;overflow:hidden;background:#14151d;
+    border:1px solid rgba(255,255,255,.1);box-shadow:0 54px 130px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .set-side{width:232px;background:linear-gradient(180deg,#101119,#0d0e15);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;padding:18px 12px 12px;flex:none}
+  .set-brand{display:flex;align-items:center;gap:9px;padding:0 8px 18px}
+  .set-brand .mini-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(145deg,#a98bff,#6d4cf2);display:grid;place-items:center;box-shadow:0 6px 16px rgba(124,92,255,.25)}
+  .set-brand .mini-mark svg{width:15px;height:15px;color:#fff}
+  .set-brand b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .set-brand span{display:block;font-size:9px;color:#646b7e;margin-top:2px}
+  .set-nav{display:flex;flex-direction:column;gap:3px}
+  .set-nav button{display:flex;align-items:center;gap:9px;height:38px;padding:0 10px;border-radius:8px;font-size:11px;color:#858c9f;text-align:left;transition:.15s}
+  .set-nav button svg{width:15px;height:15px;color:#626a7d}
+  .set-nav button:hover{background:rgba(255,255,255,.04);color:#c8cdda}
+  .set-nav button.active{background:rgba(139,108,255,.12);color:#ede9ff;box-shadow:inset 0 0 0 1px rgba(139,108,255,.18)}
+  .set-nav button.active svg{color:#b6a7ff}
+  .set-nav button span{margin-left:auto;font-size:8.5px;color:#5e6578}
+  .set-side-foot{margin-top:auto;padding:12px 8px 0;border-top:1px solid rgba(255,255,255,.06);font-size:9px;color:#5e6578;display:flex;flex-direction:column;gap:7px}
+  .set-side-foot .upd{display:flex;align-items:center;justify-content:space-between;color:#7f869a}
+  .set-side-foot .upd button{font-size:9px;color:#a99bff;padding:3px 6px;border-radius:5px}
+  .set-side-foot .upd button:hover{background:rgba(139,108,255,.1)}
+  .set-main{flex:1;display:flex;flex-direction:column;min-width:0;background:#15161f}
+  .set-head{height:78px;padding:0 26px;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);flex:none}
+  .set-head h2{font-size:16px;font-weight:600;letter-spacing:.01em}
+  .set-head p{font-size:10.5px;color:#767d91;margin-top:4px}
+  .set-head .icon-btn{margin-left:auto}
+  .set-content{flex:1;padding:8px 26px 22px;overflow:auto}
+  .set-content::-webkit-scrollbar{width:5px}
+  .set-content::-webkit-scrollbar-thumb{background:#2b2f3d;border-radius:99px}
+  .set-page{display:none}
+  .set-page.active{display:block;animation:fadein .22s ease both}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .set-group{padding-top:16px}
+  .set-group > h3{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#5f667a;font-weight:600;margin-bottom:5px}
+  .set-row{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.045);min-height:54px}
+  .set-row:last-child{border-bottom:0}
+  .set-txt{min-width:0;flex:1}
+  .set-txt b{display:block;font-size:11.5px;font-weight:500;color:#d3d8e5;letter-spacing:.005em}
+  .set-txt span{display:block;font-size:9.5px;color:#6d7488;margin-top:3px;line-height:1.5}
+  .switch{width:38px;height:22px;border-radius:99px;background:#2b2e3a;position:relative;flex:none;transition:.18s;box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+  .switch::after{content:"";position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#8a91a4;transition:.18s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .switch.on{background:linear-gradient(180deg,#9b7fff,#8060ff);box-shadow:0 0 0 3px rgba(139,108,255,.08)}
+  .switch.on::after{left:18px;background:#fff}
+  .switch.disabled{opacity:.4;cursor:not-allowed}
+  .seg{display:flex;align-items:center;padding:3px;background:#0e0f15;border:1px solid rgba(255,255,255,.07);border-radius:8px;flex:none}
+  .seg button{height:25px;padding:0 10px;border-radius:6px;font-size:9.5px;color:#747b8e;transition:.15s;white-space:nowrap}
+  .seg button:hover{color:#c6cbd9}
+  .seg button.active{background:#2a2d3a;color:#f0f2f8;box-shadow:0 1px 4px rgba(0,0,0,.25),inset 0 0 0 1px rgba(255,255,255,.06)}
+  .select{display:flex;align-items:center;gap:8px;min-width:118px;height:31px;padding:0 9px;border-radius:7px;background:#0e0f15;border:1px solid rgba(255,255,255,.08);font-size:10px;color:#c0c6d5;flex:none;justify-content:space-between}
+  .select:hover{border-color:rgba(255,255,255,.16)}
+  .select svg{width:10px;height:10px;color:#666e81}
+  .path-box{display:flex;align-items:center;gap:8px;flex:none;max-width:330px}
+  .path-box code{font-family:var(--mono);font-size:9.5px;color:#a6adbf;background:#0e0f15;border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+  .btn-ghost{height:29px;padding:0 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);font-size:9.5px;color:#b6bdcd;display:flex;align-items:center;gap:5px;transition:.15s;flex:none}
+  .btn-ghost:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.18)}
+  .btn-ghost svg{width:11px;height:11px}
+  .ver-row{display:flex;align-items:center;gap:9px}
+  .ver-pill{font-family:var(--mono);font-size:9px;color:#b9a9ff;background:rgba(139,108,255,.1);border:1px solid rgba(139,108,255,.18);border-radius:5px;padding:3px 7px}
+  .shortcut-list{display:flex;flex-direction:column}
+  .sc-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.045);font-size:11px;color:#b7bdcd}
+  .sc-row:last-child{border-bottom:0}
+  .sc-row svg{width:14px;height:14px;color:#6d7488}
+  .sc-row span{flex:1}
+  .keys{display:flex;gap:4px;align-items:center}
+  .keys kbd{font-family:var(--mono);font-size:8.5px;color:#c3c9d8;background:#0e0f15;border:1px solid rgba(255,255,255,.1);border-bottom-color:rgba(255,255,255,.16);border-radius:4px;padding:3px 5px;min-width:19px;text-align:center;box-shadow:0 1px 0 rgba(0,0,0,.3)}
+  .keys i{font-style:normal;font-size:8px;color:#535a6d}
+  .blacklist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+  .bl-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:#101118;border:1px solid rgba(255,255,255,.05);font-size:10.5px;color:#b5bccb}
+  .bl-app{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:9px;font-weight:700;color:#fff;flex:none}
+  .bl-row span{flex:1}
+  .bl-row small{font-size:9px;color:#62697c}
+  .bl-row .icon-btn{width:26px;height:26px}
+  .bl-row .icon-btn svg{width:12px;height:12px}
+  .add-app{display:flex;align-items:center;justify-content:center;gap:6px;height:36px;border-radius:8px;border:1px dashed rgba(255,255,255,.13);font-size:10px;color:#848b9f;margin-top:9px;transition:.15s}
+  .add-app:hover{border-color:rgba(139,108,255,.4);color:#c9bcff;background:rgba(139,108,255,.04)}
+  .add-app svg{width:12px;height:12px}
+  .note-line{display:flex;align-items:flex-start;gap:8px;margin-top:14px;padding:10px 11px;border-radius:8px;background:rgba(139,108,255,.06);border:1px solid rgba(139,108,255,.12);font-size:9.5px;color:#9a92b8;line-height:1.55}
+  .note-line svg{width:13px;height:13px;color:#a795ff;margin-top:1px}
+  .theme-swatches{display:flex;gap:6px}
+  .theme-swatch{width:52px;height:30px;border-radius:6px;border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden}
+  .theme-swatch.dark{background:linear-gradient(135deg,#22232e,#111218)}
+  .theme-swatch.light{background:linear-gradient(135deg,#f2f3f7,#d8dbe4)}
+  .theme-swatch.auto{background:linear-gradient(135deg,#f2f3f7 0 50%,#111218 50%)}
+  .theme-swatch.active{box-shadow:0 0 0 2px #8b6cff}
+  .theme-swatch.active::after{content:"";position:absolute;right:4px;bottom:4px;width:5px;height:5px;border-radius:50%;background:#8b6cff}
+
+  .stage-toast{
+    position:absolute;left:50%;bottom:24px;transform:translate(-50%,12px);z-index:50;
+    display:flex;align-items:center;gap:8px;height:36px;padding:0 13px;border-radius:8px;
+    background:rgba(14,15,22,.92);border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(14px);
+    font-size:10px;color:#c5cbd9;opacity:0;pointer-events:none;transition:.24s;white-space:nowrap;box-shadow:0 16px 44px rgba(0,0,0,.45);
+  }
+  .stage-toast.show{opacity:1;transform:translate(-50%,0)}
+  .stage-toast .ok{width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:rgba(61,220,151,.13);color:#3ddc97}
+  .stage-toast .ok svg{width:9px;height:9px;stroke-width:2.6}
+
+  .page-foot{max-width:1536px;margin:0 auto;padding:12px 32px 28px;display:flex;align-items:center;gap:18px;color:#565d70;font-size:10.5px;flex-wrap:wrap}
+  .page-foot .tip{display:flex;align-items:center;gap:7px}
+  .page-foot .tip svg{width:12px;height:12px;color:#6f778b}
+  .page-foot .keys{display:flex;gap:4px;align-items:center;color:#656d80}
+  .page-foot kbd{font-family:var(--mono);font-size:8.5px;color:#9aa1b4;background:#0e0f15;border:1px solid rgba(255,255,255,.09);border-radius:4px;padding:2px 5px}
+  .page-foot .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .page-foot .right i{width:5px;height:5px;border-radius:50%;background:#38d4e8}
+
+  @media (max-width:1000px){
+    .page-head{padding:18px 18px 14px}
+    .workspace{padding:0 18px 10px}
+    .page-foot{padding:10px 18px 22px}
+    .view-tabs{order:3;width:100%;margin-left:0}
+    .head-note{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001s !important;transition-duration:.001s !important}
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+    <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 3v13a2 2 0 0 0 2 2h13"/><path d="M3 6h13a2 2 0 0 1 2 2v13"/></symbol>
+    <symbol id="i-window" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><circle cx="6.5" cy="6.5" r=".7" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-apps" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></symbol>
+    <symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 12h2M8 8v8M12 5v14M16 9v6M20 11v2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0M12 17v4M9 21h6"/></symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="m15 10 5-3v10l-5-3"/></symbol>
+    <symbol id="i-cursor" viewBox="0 0 24 24"><path d="m5 3 14 7-6.2 1.8L10 18 5 3Z"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12"/></symbol>
+    <symbol id="i-chev-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-chev-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 5v6h-6"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14" stroke-width="2.4"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 6 9 6-9 6V6Z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></symbol>
+    <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="7" r="2.5"/><circle cx="6" cy="17" r="2.5"/><path d="m8 8.5 12 7M20 8.5 8 15.5"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6l-7-3Z"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M6 13h.01M9.5 13h.01M13 13h.01M16.5 13h.01M7 16h10"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-magnet" viewBox="0 0 24 24"><path d="M6 4v8a6 6 0 0 0 12 0V4h-4v8a2 2 0 0 1-4 0V4H6Z"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 2 7"/><path d="M4 4v6h6"/></symbol>
+    <symbol id="i-record" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2ZM10 21h4"/></symbol>
+    <symbol id="i-chev-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 13 4-4"/><circle cx="12" cy="17" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  </defs>
+</svg>
+
+<header class="page-head">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="rgba(255,255,255,.55)" stroke-width="1.4"/><circle cx="12" cy="12" r="4.2" fill="#fff"/><circle cx="12" cy="12" r="8.5" stroke="rgba(255,255,255,.28)" stroke-width="3.6" stroke-dasharray="1 7"/></svg>
+    </div>
+    <div>
+      <h1>FastRecorder <em>UI CONCEPT</em></h1>
+      <p>跨平台录屏工具 · 深色视觉稿 · Windows 优先</p>
+    </div>
+  </div>
+  <nav class="view-tabs" id="viewTabs" aria-label="界面视图">
+    <button data-view="main" class="active"><span>01</span>主面板</button>
+    <button data-view="source"><span>02</span>选择来源</button>
+    <button data-view="region"><span>03</span>区域框选</button>
+    <button data-view="recording"><span>04</span>录制中</button>
+    <button data-view="done"><span>05</span>完成预览</button>
+    <button data-view="settings"><span>06</span>设置</button>
+  </nav>
+  <div class="head-note"><i></i>可交互原型</div>
+</header>
+
+<main class="workspace">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+
+      <div class="wallpaper"></div>
+      <div class="orb orb-a"></div>
+      <div class="orb orb-b"></div>
+      <div class="orb orb-c"></div>
+
+      <div class="desktop" aria-hidden="true">
+        <div class="win editor-win">
+          <div class="win-bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <span class="win-title">main.py — FastRecorder</span>
+            <span class="win-badge">Python</span>
+            <div class="win-ctrl"><b></b><i></i><s></s></div>
+          </div>
+          <div class="editor-shell">
+            <div class="editor-rail">
+              <span class="active"><svg class="i" viewBox="0 0 24 24"><use href="#i-folder"/></svg></span>
+              <span><svg class="i" viewBox="0 0 24 24"><use href="#i-search"/></svg></span>
+              <span><svg class="i" viewBox="0 0 24 24"><use href="#i-apps"/></svg></span>
+              <span><svg class="i" viewBox="0 0 24 24"><use href="#i-film"/></svg></span>
+            </div>
+            <div class="editor-side">
+              <div class="side-head">Explorer</div>
+              <div class="side-row active"><svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg>FASTRECORDER</div>
+              <div class="side-row indent"><span class="dot"></span>src</div>
+              <div class="side-row indent"><span class="dot"></span>capture.py</div>
+              <div class="side-row indent"><span class="dot"></span>audio.py</div>
+              <div class="side-row indent"><span class="dot"></span>encoder.py</div>
+              <div class="side-row indent" style="color:#cfd3e0"><span class="dot" style="background:#4e9af1"></span>main.py</div>
+              <div class="side-row indent"><span class="dot"></span>settings.json</div>
+              <div class="side-row"><svg class="i" viewBox="0 0 24 24"><use href="#i-chev-right"/></svg>recordings</div>
+              <div class="side-row"><svg class="i" viewBox="0 0 24 24"><use href="#i-chev-right"/></svg>docs</div>
+              <div class="side-row"><svg class="i" viewBox="0 0 24 24"><use href="#i-chev-right"/></svg>README.md</div>
+            </div>
+            <div class="editor-code">
+              <div class="tabs">
+                <div class="tab active"><i></i>main.py</div>
+                <div class="tab">capture.py</div>
+                <div class="tab">audio.py</div>
+              </div>
+              <div class="code">
+                <div class="cl"><span class="ln">1</span><span><span class="tk-key">from</span> <span class="tk-var">__future__</span> <span class="tk-key">import</span> annotations</span></div>
+                <div class="cl"><span class="ln">2</span><span></span></div>
+                <div class="cl"><span class="ln">3</span><span><span class="tk-key">import</span> time</span></div>
+                <div class="cl"><span class="ln">4</span><span><span class="tk-key">from</span> pathlib <span class="tk-key">import</span> Path</span></div>
+                <div class="cl"><span class="ln">5</span><span></span></div>
+                <div class="cl"><span class="ln">6</span><span><span class="tk-key">from</span> fastrecorder.capture <span class="tk-key">import</span> ScreenSource</span></div>
+                <div class="cl"><span class="ln">7</span><span><span class="tk-key">from</span> fastrecorder.audio <span class="tk-key">import</span> SystemAudio, Microphone</span></div>
+                <div class="cl"><span class="ln">8</span><span><span class="tk-key">from</span> fastrecorder.muxer <span class="tk-key">import</span> MP4Muxer</span></div>
+                <div class="cl"><span class="ln">9</span><span></span></div>
+                <div class="cl"><span class="ln">10</span><span><span class="tk-key">def</span> <span class="tk-fn">main</span>() -&gt; <span class="tk-type">None</span>:</span></div>
+                <div class="cl"><span class="ln">11</span><span>    out = Path(<span class="tk-str">"recordings"</span>) / <span class="tk-str">f"capture_{int(time.time())}.mp4"</span></span></div>
+                <div class="cl"><span class="ln">12</span><span>    video = <span class="tk-fn">ScreenSource</span>(display=<span class="tk-num">1</span>, fps=<span class="tk-num">60</span>)</span></div>
+                <div class="cl"><span class="ln">13</span><span>    audio = <span class="tk-fn">SystemAudio</span>() | <span class="tk-fn">Microphone</span>(<span class="tk-str">"default"</span>)</span></div>
+                <div class="cl"><span class="ln">14</span><span></span></div>
+                <div class="cl"><span class="ln">15</span><span>    <span class="tk-key">with</span> <span class="tk-fn">MP4Muxer</span>(out, video=video, audio=audio) <span class="tk-key">as</span> mux:</span></div>
+                <div class="cl"><span class="ln">16</span><span>        <span class="tk-key">for</span> frame <span class="tk-key">in</span> video.<span class="tk-fn">frames</span>():</span></div>
+                <div class="cl"><span class="ln">17</span><span>            mux.<span class="tk-fn">write</span>(frame)  <span class="tk-com"># pts + audio sync</span></span></div>
+                <div class="cl"><span class="ln">18</span><span></span></div>
+                <div class="cl"><span class="ln">19</span><span><span class="tk-key">if</span> __name__ == <span class="tk-str">"__main__"</span>:</span></div>
+                <div class="cl"><span class="ln">20</span><span>    <span class="tk-fn">main</span>()</span></div>
+              </div>
+              <div class="editor-status"><span>main</span><span>UTF-8</span><span>Python 3.12</span><span>Ln 20, Col 9</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="win dash-win">
+          <div class="win-bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <span class="win-title">FastRecorder · 录制库</span>
+            <div class="win-ctrl"><b></b><i></i><s></s></div>
+          </div>
+          <div class="dash-body">
+            <div class="dash-head"><b>最近录制</b><span>本周</span><em>7 个文件</em></div>
+            <div class="stats">
+              <div class="stat"><span>本周时长</span><b>3.4<small>小时</small></b></div>
+              <div class="stat"><span>占用空间</span><b>18.6<small>GB</small></b></div>
+            </div>
+            <div class="chart">
+              <i style="height:28%"></i><i style="height:44%"></i><i style="height:36%"></i><i style="height:62%"></i><i style="height:48%"></i><i style="height:74%"></i><i style="height:58%"></i><i style="height:92%"></i><i style="height:66%"></i><i style="height:80%"></i><i style="height:52%"></i><i style="height:88%"></i>
+            </div>
+            <div class="recent">
+              <div class="recent-thumb"></div>
+              <div><b>FastRecorder 2026-10-24 21.30.00.mp4</b><span>00:24:18 · 386 MB</span></div>
+              <svg class="i" viewBox="0 0 24 24"><use href="#i-chev-right"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="screen active" data-screen="main">
+        <div class="scrim main-scrim"></div>
+        <div class="main-panel rise">
+          <div class="panel-head">
+            <div class="app-mark">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.6" stroke="rgba(255,255,255,.5)" stroke-width="1.4"/><circle cx="12" cy="12" r="4.5" fill="#fff"/><circle cx="12" cy="12" r="8.6" stroke="rgba(255,255,255,.3)" stroke-width="3.4" stroke-dasharray="1 7"/></svg>
+            </div>
+            <div class="app-name">
+              <h2>FastRecorder <b>V0.1</b></h2>
+              <p><i></i>就绪 · 上次录制 00:24:18</p>
+            </div>
+            <div class="win-btns">
+              <button class="win-btn" id="hidePanel" title="最小化到托盘" aria-label="最小化到托盘"><svg class="i" viewBox="0 0 24 24"><use href="#i-minus"/></svg></button>
+              <button class="win-btn" id="closePanel" title="关闭面板" aria-label="关闭面板"><svg class="i" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
+            </div>
+          </div>
+
+          <div class="section-head"><span>录制来源</span><em>选择后调整参数</em></div>
+          <div class="source-grid">
+            <button class="source-card is-active" data-kind="screen">
+              <span class="tile"><svg class="i" viewBox="0 0 24 24"><use href="#i-monitor"/></svg></span>
+              <span class="pick"><svg class="i" viewBox="0 0 24 24"><use href="#i-check"/></svg></span>
+              <b>全屏</b><small>显示器 1 · 2560×1600</small>
+            </button>
+            <button class="source-card" data-kind="region">
+              <span class="tile"><svg class="i" viewBox="0 0 24 24"><use href="#i-crop"/></svg></span>
+              <span class="pick"><svg class="i" viewBox="0 0 24 24"><use href="#i-check"/></svg></span>
+              <b>屏幕区域</b><small>框选任意范围</small>
+            </button>
+            <button class="source-card" data-kind="window">
+              <span class="tile"><svg class="i" viewBox="0 0 24 24"><use href="#i-window"/></svg></span>
+              <span class="pick"><svg class="i" viewBox="0 0 24 24"><use href="#i-check"/></svg></span>
+              <b>窗口</b><small>按单个窗口录制</small>
+            </button>
+            <button class="source-card" data-kind="app">
+              <span class="tile"><svg class="i" viewBox="0 0 24 24"><use href="#i-apps"/></svg></span>
+              <span class="pick"><svg class="i" viewBox="0 0 24 24"><use href="#i-check"/></svg></span>
+              <b>应用程序</b><small>可多选，其他窗口不入镜</small>
+            </button>
+            <button class="source-card" data-kind="audio">
+              <span class="tile"><svg class="i" viewBox="0 0 24 24"><use href="#i-wave"/></svg></span>
+              <span class="pick"><svg class="i" viewBox="0 0 24 24"><use href="#i-check"/></svg></span>
+              <b>系统声音</b><small>仅音频 · 可混入麦克风</small>
+            </button>
+            <button class="source-card disabled" data-kind="mobile" aria-disabled="true">
+              <span class="tile"><svg class="i" viewBox="0 0 24 24"><use href="#i-phone"/></svg></span>
+              <span class="soon">规划中</span>
+              <b>移动设备</b><small>USB 采集 iPhone / iPad</small>
+            </button>
+          </div>
+
+          <div class="quick-row">
+            <button class="qchip on toggle" id="micChip">
+              <svg class="i" viewBox="0 0 24 24"><use href="#i-mic"/></svg>
+              <b>麦克风</b><span class="sub">默认设备</span>
+              <span class="bars"><i></i><i></i><i></i><i></i></span>
+            </button>
+            <button class="qchip on toggle">
+              <svg class="i" viewBox="0 0 24 24"><use href="#i-speaker"/></svg>
+              <b>系统声音</b><span class="led"></span>
+            </button>
+            <button class="qchip toggle">
+              <svg class="i" viewBox="0 0 24 24"><use href="#i-camera"/></svg>
+              <b>摄像头</b><span class="led"></span>
+            </button>
+            <button class="qchip on toggle">
+              <svg class="i" viewBox="0 0 24 24"><use href="#i-cursor"/></svg>
+              <b>鼠标高亮</b><span class="led"></span>
+            </button>
+          </div>
+
+          <div class="output-row">
+            <button class="path-chip" id="openFolder">
+              <svg class="i" viewBox="0 0 24 24"><use href="#i-folder"/></svg>
+              <span>保存至</span><b>视频 / FastRecorder</b>
+              <svg class="i chev" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg>
+            </button>
+            <span class="format-hint">MP4 <i></i> H.264 <i></i> 60 fps</span>
+          </div>
+
+          <div class="panel-foot">
+            <button class="delay-chip" id="delayChip">
+              <svg class="i" viewBox="0 0 24 24"><use href="#i-clock"/></svg>
+              <span>倒计时</span><b id="delayValue">3 秒</b>
+              <svg class="i chev" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg>
+            </button>
+            <button class="record-btn" id="mainRecord"><span class="dot"></span>开始录制</button>
+          </div>
+          <div class="panel-tip">拖动面板可移动 · <kbd>Esc</kbd> 关闭 · <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>R</kbd> 快速开始</div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="source">
+        <div class="scrim heavy"></div>
+        <div class="picker rise">
+          <div class="picker-head">
+            <button class="icon-btn" data-to="main" aria-label="返回"><svg class="i" viewBox="0 0 24 24"><use href="#i-arrow-left"/></svg></button>
+            <div class="picker-title">
+              <h2>选择录制来源</h2>
+              <p>窗口单选 · 应用程序可多选</p>
+            </div>
+            <div class="picker-tabs" id="pickerTabs">
+              <button data-tab="显示器">显示器 <em>2</em></button>
+              <button data-tab="窗口" class="active">窗口 <em>4</em></button>
+              <button data-tab="应用">应用 <em>3</em></button>
+            </div>
+            <div class="head-actions">
+              <label class="search">
+                <svg class="i" viewBox="0 0 24 24"><use href="#i-search"/></svg>
+                <input id="sourceSearch" type="text" placeholder="搜索窗口或应用">
+              </label>
+              <button class="icon-btn sm" id="refreshSources" title="刷新列表" aria-label="刷新列表"><svg class="i" viewBox="0 0 24 24"><use href="#i-refresh"/></svg></button>
+              <button class="icon-btn sm" data-to="main" title="关闭" aria-label="关闭"><svg class="i" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
+            </div>
+          </div>
+          <div class="picker-body">
+            <aside class="source-list">
+              <div class="list-head"><span id="listLabel">当前窗口</span><button id="refreshInline"><svg class="i" viewBox="0 0 24 24"><use href="#i-refresh"/></svg>刷新列表</button></div>
+              <div class="source-items" id="sourceItems"></div>
+              <div class="list-note"><svg class="i" viewBox="0 0 24 24"><use href="#i-info"/></svg>仅显示当前桌面上的窗口 · 点击卡片切换右侧预览</div>
+            </aside>
+            <div class="preview-pane">
+              <div class="preview-top">
+                <b>实时预览</b><span>·</span><span id="previewKind">窗口</span>
+                <span class="live-badge"><i></i>LIVE</span>
+              </div>
+              <div class="preview-stage">
+                <div class="pv-window">
+                  <div class="pv-bar"><i></i><i></i><i></i><em id="pvTitle">main.py — FastRecorder</em></div>
+                  <div class="pv-body">
+                    <div class="pv-side"><i></i><i></i><i></i><i></i></div>
+                    <div class="pv-code"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                  </div>
+                </div>
+                <span class="pv-size" id="pvSize">1280 × 720</span>
+              </div>
+              <div class="preview-foot">
+                <span class="src-dot"></span>
+                <span>正在预览</span>
+                <b id="pvName">main.py — FastRecorder</b>
+                <span id="pvFps">60 FPS</span>
+              </div>
+            </div>
+          </div>
+          <div class="picker-foot">
+            <button class="param">分辨率 <b id="pRes">原始</b><q>自动</q><svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg></button>
+            <button class="param">帧率 <b>60</b><q>FPS</q><svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg></button>
+            <button class="param">画质 <b>高</b><q>码率</q><svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg></button>
+            <span class="v-line"></span>
+            <button class="qchip on toggle" title="录制鼠标光标"><svg class="i" viewBox="0 0 24 24"><use href="#i-cursor"/></svg><b>光标</b></button>
+            <button class="qchip on toggle" title="录制系统声音"><svg class="i" viewBox="0 0 24 24"><use href="#i-speaker"/></svg><b>系统声</b></button>
+            <button class="qchip toggle" title="录制麦克风"><svg class="i" viewBox="0 0 24 24"><use href="#i-mic"/></svg><b>麦克风</b></button>
+            <span class="estimate"><i></i>约 1.8 GB / 小时</span>
+            <button class="record-btn compact" data-to="recording"><span class="dot"></span>开始录制</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="region">
+        <div class="region-selection">
+          <span class="region-badge">
+            <svg class="i" viewBox="0 0 24 24"><use href="#i-crop"/></svg>
+            <span>1280 × 960</span>
+            <em>4:3</em>
+            <span class="snap"><i></i>已吸附窗口</span>
+          </span>
+          <span class="rg-guide v" style="left:33.333%"></span>
+          <span class="rg-guide v" style="left:66.666%"></span>
+          <span class="rg-guide h" style="top:33.333%"></span>
+          <span class="rg-guide h" style="top:66.666%"></span>
+          <span class="handle n"></span><span class="handle s"></span><span class="handle e"></span><span class="handle w"></span>
+          <span class="handle ne"></span><span class="handle nw"></span><span class="handle se"></span><span class="handle sw"></span>
+          <span class="region-corner">60 fps · 原始分辨率</span>
+        </div>
+        <div class="region-hint">
+          <svg class="i" viewBox="0 0 24 24"><use href="#i-crop"/></svg>
+          <span>拖拽调整选区 · <b>已记忆显示器 1 的上次选区</b></span>
+          <span class="vl"></span>
+          <span>确认 <kbd>Enter</kbd></span>
+          <span>取消 <kbd>Esc</kbd></span>
+        </div>
+        <div class="region-toolbar">
+          <button class="tool-btn" data-toast="原型中：选区已吸附到窗口边缘"><svg class="i" viewBox="0 0 24 24"><use href="#i-magnet"/></svg>吸附窗口</button>
+          <button class="tool-btn" data-toast="原型中：已恢复上次选区"><svg class="i" viewBox="0 0 24 24"><use href="#i-reset"/></svg>重置</button>
+          <button class="tool-btn cancel" data-to="main"><svg class="i" viewBox="0 0 24 24"><use href="#i-close"/></svg>取消</button>
+          <span class="v-line"></span>
+          <button class="param">帧率 <b>60</b><q>FPS</q><svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg></button>
+          <button class="param">画质 <b>原始</b><q>自动</q><svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg></button>
+          <button class="qchip on toggle"><svg class="i" viewBox="0 0 24 24"><use href="#i-speaker"/></svg><b>系统声</b></button>
+          <button class="qchip on toggle"><svg class="i" viewBox="0 0 24 24"><use href="#i-mic"/></svg><b>麦克风</b></button>
+          <button class="qchip on toggle"><svg class="i" viewBox="0 0 24 24"><use href="#i-cursor"/></svg><b>光标</b></button>
+          <button class="tool-btn" data-toast="原型中：设置定时停止"><svg class="i" viewBox="0 0 24 24"><use href="#i-clock"/></svg>定时</button>
+          <button class="record-btn" data-to="recording"><span class="dot"></span>开始录制</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="recording">
+        <div class="rec-frame"></div>
+        <div class="rec-chip left"><svg class="i" viewBox="0 0 24 24"><use href="#i-monitor"/></svg><b>全屏 · 显示器 1</b><span class="sep"></span><span>2560 × 1600</span></div>
+        <div class="rec-chip right"><svg class="i" viewBox="0 0 24 24"><use href="#i-gauge"/></svg><span>H.264</span><span class="sep"></span><span>60 FPS</span><span class="sep"></span><b>高画质</b></div>
+        <div class="hud" id="hud">
+          <span class="rec-dot"></span>
+          <span class="rec-label" id="recLabel">REC</span>
+          <span class="rec-time num" id="recTime">00:12:47</span>
+          <span class="hdiv"></span>
+          <span class="mic-meter" title="麦克风电平"><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="hdiv"></span>
+          <button class="hbtn pause" id="pauseRec" title="暂停录制" aria-label="暂停录制"><svg class="i" viewBox="0 0 24 24"><use href="#i-pause"/></svg></button>
+          <button class="hbtn cam" title="摄像头画中画已开启" aria-label="摄像头"><svg class="i" viewBox="0 0 24 24"><use href="#i-camera"/></svg></button>
+          <button class="hbtn stop" id="stopRec" title="结束录制" aria-label="结束录制"><svg class="i" viewBox="0 0 24 24"><use href="#i-stop"/></svg></button>
+        </div>
+        <div class="cam-bubble">
+          <span class="cam-glow"></span><span class="cam-glow b"></span>
+          <div class="cam-person"><span class="head"></span><span class="body"></span></div>
+          <span class="cam-label"><i></i>摄像头</span>
+          <span class="cam-pip">画中画</span>
+        </div>
+        <div class="cursor-ring"></div>
+        <div class="cursor-tip">鼠标点击高亮</div>
+        <div class="rec-order"><svg class="i" viewBox="0 0 24 24"><use href="#i-shield"/></svg>防休眠已开启</div>
+        <div class="rec-hint"><i></i>正在录制 · 按 <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>S</kbd> 结束并保存</div>
+      </section>
+
+      <section class="screen" data-screen="done">
+        <div class="scrim"></div>
+        <div class="done-toast rise">
+          <span class="ok"><svg class="i" viewBox="0 0 24 24"><use href="#i-check"/></svg></span>
+          <span><b>录制完成</b> · 已保存到 视频 / FastRecorder</span>
+        </div>
+        <div class="preview-card rise">
+          <div class="pc-thumb">
+            <div class="pc-mini">
+              <div class="pc-mini-bar"><i></i><i></i><i></i></div>
+              <div class="pc-mini-body">
+                <div class="pc-mini-side"><i></i><i></i><i></i><i></i></div>
+                <div class="pc-mini-code"><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
+            </div>
+            <span class="pc-chip">2.5K · 60 FPS</span>
+            <button class="pc-play" data-toast="原型中：使用系统播放器打开" aria-label="播放"><svg class="i" viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+            <span class="pc-dur">00:24:18</span>
+          </div>
+          <div class="pc-body">
+            <div class="pc-name">FastRecorder 2026-10-24 21.30.00.mp4</div>
+            <div class="pc-meta">386 MB <i></i> 视频 / FastRecorder <i></i> H.264</div>
+            <div class="pc-actions">
+              <button class="pc-playbtn" data-toast="原型中：使用系统播放器打开"><svg class="i" viewBox="0 0 24 24"><use href="#i-play"/></svg>播放</button>
+              <button class="icon-btn" data-toast="原型中：在文件夹中显示" title="在文件夹中显示" aria-label="在文件夹中显示"><svg class="i" viewBox="0 0 24 24"><use href="#i-folder"/></svg></button>
+              <button class="icon-btn" data-toast="原型中：打开内置剪辑" title="剪辑" aria-label="剪辑"><svg class="i" viewBox="0 0 24 24"><use href="#i-scissors"/></svg></button>
+              <button class="icon-btn" data-toast="原型中：导出 GIF" title="制作 GIF" aria-label="制作 GIF"><svg class="i" viewBox="0 0 24 24"><use href="#i-film"/></svg></button>
+              <button class="icon-btn danger" data-toast="原型中：删除文件" title="删除" aria-label="删除"><svg class="i" viewBox="0 0 24 24"><use href="#i-trash"/></svg></button>
+            </div>
+          </div>
+          <div class="pc-auto"></div>
+        </div>
+        <div class="rec-order" style="left:40px;bottom:40px"><svg class="i" viewBox="0 0 24 24"><use href="#i-bell"/></svg>6 秒后自动隐藏 · 悬停保留</div>
+      </section>
+
+      <section class="screen" data-screen="settings">
+        <div class="scrim heavy"></div>
+        <div class="settings-win rise">
+          <aside class="set-side">
+            <div class="set-brand">
+              <span class="mini-mark"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="rgba(255,255,255,.55)" stroke-width="1.4"/><circle cx="12" cy="12" r="4.2" fill="#fff"/></svg></span>
+              <div><b>偏好设置</b><span>FastRecorder v0.1.0</span></div>
+            </div>
+            <nav class="set-nav" id="setNav">
+              <button data-page="general"><svg class="i" viewBox="0 0 24 24"><use href="#i-gauge"/></svg>通用</button>
+              <button data-page="record" class="active"><svg class="i" viewBox="0 0 24 24"><use href="#i-record"/></svg>录制</button>
+              <button data-page="output"><svg class="i" viewBox="0 0 24 24"><use href="#i-folder"/></svg>输出</button>
+              <button data-page="keys"><svg class="i" viewBox="0 0 24 24"><use href="#i-keyboard"/></svg>快捷键</button>
+              <button data-page="block"><svg class="i" viewBox="0 0 24 24"><use href="#i-shield"/></svg>黑名单</button>
+            </nav>
+            <div class="set-side-foot">
+              <div class="upd"><span>已是最新版本</span><button data-toast="原型中：检查更新">检查更新</button></div>
+              <span>Windows 11 · 22H2</span>
+            </div>
+          </aside>
+          <div class="set-main">
+            <div class="set-head">
+              <div><h2 id="setTitle">录制</h2><p id="setSub">控制录制流程、画面效果与声音来源</p></div>
+              <button class="icon-btn" data-to="main" aria-label="关闭设置"><svg class="i" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
+            </div>
+            <div class="set-content" id="setContent">
+              <div class="set-page" data-page="general">
+                <div class="set-group">
+                  <h3>启动</h3>
+                  <div class="set-row"><div class="set-txt"><b>开机自动启动</b><span>登录系统后在托盘静默运行</span></div><button class="switch" aria-label="开机自动启动"></button></div>
+                  <div class="set-row"><div class="set-txt"><b>启动时最小化到托盘</b><span>不显示主面板，仅保留托盘图标</span></div><button class="switch on" aria-label="启动时最小化"></button></div>
+                  <div class="set-row"><div class="set-txt"><b>仅允许单个实例</b><span>重复启动时呼出已运行的面板</span></div><button class="switch on disabled" aria-label="单个实例"></button></div>
+                </div>
+                <div class="set-group">
+                  <h3>外观</h3>
+                  <div class="set-row">
+                    <div class="set-txt"><b>主题</b><span>界面与浮窗的明暗风格</span></div>
+                    <div class="theme-swatches">
+                      <button class="theme-swatch dark active" aria-label="深色"></button>
+                      <button class="theme-swatch light" aria-label="浅色"></button>
+                      <button class="theme-swatch auto" aria-label="跟随系统"></button>
+                    </div>
+                  </div>
+                  <div class="set-row"><div class="set-txt"><b>界面语言</b><span>需要重启应用生效</span></div><button class="select">简体中文 <svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg></button></div>
+                </div>
+                <div class="set-group">
+                  <h3>更新</h3>
+                  <div class="set-row"><div class="set-txt"><b>自动检查更新</b><span>发现新版本时在托盘提示</span></div><button class="switch on" aria-label="自动更新"></button></div>
+                  <div class="set-row"><div class="set-txt"><b>当前版本</b><span>上次检查：今天 20:58</span></div><span class="ver-pill">v0.1.0</span></div>
+                </div>
+              </div>
+
+              <div class="set-page active" data-page="record">
+                <div class="set-group">
+                  <h3>开始录制</h3>
+                  <div class="set-row">
+                    <div class="set-txt"><b>开始前倒计时</b><span>先隐藏面板，倒计时结束后开始采集</span></div>
+                    <div class="seg"><button>关闭</button><button class="active">3 秒</button><button>5 秒</button><button>10 秒</button></div>
+                  </div>
+                  <div class="set-row"><div class="set-txt"><b>结束后显示预览浮窗</b><span>在右下角显示缩略图，6 秒后自动隐藏</span></div><button class="switch on" aria-label="预览浮窗"></button></div>
+                  <div class="set-row"><div class="set-txt"><b>录制时阻止系统休眠</b><span>长时间录制时保持显示器与系统唤醒</span></div><button class="switch on" aria-label="阻止休眠"></button></div>
+                </div>
+                <div class="set-group">
+                  <h3>画面</h3>
+                  <div class="set-row"><div class="set-txt"><b>鼠标高亮</b><span>点击时显示光环，便于演示讲解</span></div><button class="switch on" aria-label="鼠标高亮"></button></div>
+                  <div class="set-row"><div class="set-txt"><b>排除 FastRecorder 自身窗口</b><span>录制全屏或区域时自动隐藏本应用</span></div><button class="switch on" aria-label="排除自身"></button></div>
+                  <div class="set-row"><div class="set-txt"><b>默认帧率</b><span>可在每次录制前单独修改</span></div><button class="select">60 FPS <svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg></button></div>
+                </div>
+                <div class="set-group">
+                  <h3>控制条</h3>
+                  <div class="set-row">
+                    <div class="set-txt"><b>悬浮控制条样式</b><span>录制中显示在屏幕顶部的胶囊控制器</span></div>
+                    <div class="seg"><button class="active">标准</button><button>迷你计时</button></div>
+                  </div>
+                  <div class="set-row"><div class="set-txt"><b>控制条贴近屏幕边缘</b><span>全屏录制时减少对画面的遮挡</span></div><button class="switch" aria-label="贴近边缘"></button></div>
+                </div>
+              </div>
+
+              <div class="set-page" data-page="output">
+                <div class="set-group">
+                  <h3>保存位置</h3>
+                  <div class="set-row">
+                    <div class="set-txt"><b>输出文件夹</b><span>目录不存在时会在录制前自动创建</span></div>
+                    <div class="path-box"><code>C:\Users\you\Videos\FastRecorder</code><button class="btn-ghost" data-toast="原型中：选择输出文件夹"><svg class="i" viewBox="0 0 24 24"><use href="#i-folder"/></svg>更改</button></div>
+                  </div>
+                  <div class="set-row"><div class="set-txt"><b>文件命名</b><span>支持 {date}、{time}、{source} 变量</span></div><div class="path-box"><code>FastRecorder {date} {time}</code></div></div>
+                </div>
+                <div class="set-group">
+                  <h3>视频</h3>
+                  <div class="set-row">
+                    <div class="set-txt"><b>容器格式</b><span>MP4 兼容性最好；MOV 支持 Alpha 通道</span></div>
+                    <div class="seg"><button class="active">MP4</button><button>MOV</button></div>
+                  </div>
+                  <div class="set-row">
+                    <div class="set-txt"><b>编码器</b><span>H.265 体积更小，旧设备兼容性较弱</span></div>
+                    <div class="seg"><button class="active">H.264</button><button>H.265</button></div>
+                  </div>
+                  <div class="set-row"><div class="set-txt"><b>优先使用硬件编码</b><span>不可用时自动回退到软件编码</span></div><button class="switch on" aria-label="硬件编码"></button></div>
+                </div>
+                <div class="set-group">
+                  <h3>音频</h3>
+                  <div class="set-row"><div class="set-txt"><b>音频格式</b><span>无损格式会忽略码率设置</span></div><button class="select">AAC <svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg></button></div>
+                  <div class="set-row"><div class="set-txt"><b>音频码率</b><span>系统声音与麦克风共用的目标码率</span></div><button class="select">256 Kbps <svg class="i" viewBox="0 0 24 24"><use href="#i-chev-down"/></svg></button></div>
+                  <div class="set-row"><div class="set-txt"><b>麦克风单独成轨</b><span>视频内保留两轨音频，方便后期调整</span></div><button class="switch" aria-label="单独成轨"></button></div>
+                </div>
+                <div class="note-line"><svg class="i" viewBox="0 0 24 24"><use href="#i-info"/></svg>当前参数（1080p · 60fps · H.264 · 高画质）约占用 1.8 GB / 小时。</div>
+              </div>
+
+              <div class="set-page" data-page="keys">
+                <div class="set-group">
+                  <h3>全局快捷键</h3>
+                  <div class="shortcut-list">
+                    <div class="sc-row"><svg class="i" viewBox="0 0 24 24"><use href="#i-monitor"/></svg><span>打开主面板</span><div class="keys"><kbd>Ctrl</kbd><i>+</i><kbd>Alt</kbd><i>+</i><kbd>R</kbd></div></div>
+                    <div class="sc-row"><svg class="i" viewBox="0 0 24 24"><use href="#i-record"/></svg><span>开始 / 结束录制</span><div class="keys"><kbd>Ctrl</kbd><i>+</i><kbd>Alt</kbd><i>+</i><kbd>S</kbd></div></div>
+                    <div class="sc-row"><svg class="i" viewBox="0 0 24 24"><use href="#i-pause"/></svg><span>暂停 / 继续</span><div class="keys"><kbd>Ctrl</kbd><i>+</i><kbd>Alt</kbd><i>+</i><kbd>P</kbd></div></div>
+                    <div class="sc-row"><svg class="i" viewBox="0 0 24 24"><use href="#i-crop"/></svg><span>框选区域并开始</span><div class="keys"><kbd>Ctrl</kbd><i>+</i><kbd>Alt</kbd><i>+</i><kbd>A</kbd></div></div>
+                    <div class="sc-row"><svg class="i" viewBox="0 0 24 24"><use href="#i-camera"/></svg><span>保存当前帧</span><div class="keys"><kbd>Ctrl</kbd><i>+</i><kbd>Alt</kbd><i>+</i><kbd>C</kbd></div></div>
+                    <div class="sc-row"><svg class="i" viewBox="0 0 24 24"><use href="#i-bell"/></svg><span>显示 / 隐藏控制条</span><div class="keys"><kbd>Ctrl</kbd><i>+</i><kbd>Alt</kbd><i>+</i><kbd>H</kbd></div></div>
+                  </div>
+                </div>
+                <div class="note-line"><svg class="i" viewBox="0 0 24 24"><use href="#i-info"/></svg>快捷键在录制过程中全局生效；如与其他软件冲突，点击右侧按键组合可重新录制。</div>
+              </div>
+
+              <div class="set-page" data-page="block">
+                <div class="set-group">
+                  <h3>黑名单应用</h3>
+                  <div class="set-txt" style="padding:2px 0 8px"><b>这些应用不会出现在全屏 / 区域录制中</b><span>仅对全屏与屏幕区域生效；录制开始后才启动的应用无法被排除。</span></div>
+                  <div class="blacklist">
+                    <div class="bl-row"><span class="bl-app" style="background:linear-gradient(145deg,#5b6cff,#3142c9)">PW</span><span>密码管理器</span><small>已排除</small><button class="icon-btn" data-toast="原型中：从黑名单移除" aria-label="移除"><svg class="i" viewBox="0 0 24 24"><use href="#i-close"/></svg></button></div>
+                    <div class="bl-row"><span class="bl-app" style="background:linear-gradient(145deg,#33d17a,#159a52)">IM</span><span>即时通讯</span><small>已排除</small><button class="icon-btn" data-toast="原型中：从黑名单移除" aria-label="移除"><svg class="i" viewBox="0 0 24 24"><use href="#i-close"/></svg></button></div>
+                    <div class="bl-row"><span class="bl-app" style="background:linear-gradient(145deg,#ff8a5c,#d9482c)">ML</span><span>邮件客户端</span><small>已排除</small><button class="icon-btn" data-toast="原型中：从黑名单移除" aria-label="移除"><svg class="i" viewBox="0 0 24 24"><use href="#i-close"/></svg></button></div>
+                  </div>
+                  <button class="add-app" data-toast="原型中：选择要排除的应用"><svg class="i" viewBox="0 0 24 24"><use href="#i-plus"/></svg>添加应用</button>
+                  <div class="note-line"><svg class="i" viewBox="0 0 24 24"><use href="#i-info"/></svg>黑名单不影响窗口、应用程序组合录制。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="stage-toast" id="stageToast"><span class="ok"><svg class="i" viewBox="0 0 24 24"><use href="#i-check"/></svg></span><span id="toastText">已完成</span></div>
+    </div>
+  </div>
+</main>
+
+<footer class="page-foot">
+  <div class="tip"><svg class="i" viewBox="0 0 24 24"><use href="#i-info"/></svg>概念稿使用 CSS 生成全部画面，无外部图片或字体依赖</div>
+  <div class="keys">切换视图 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd><kbd>5</kbd><kbd>6</kbd></div>
+  <div class="right"><i></i>主要流程可点击，演示顺序：主面板 → 来源 / 框选 → 录制 → 完成</div>
+</footer>
+
+<script>
+  const stage = document.getElementById('stage');
+  const stageWrap = document.getElementById('stageWrap');
+  const screens = [...document.querySelectorAll('.screen')];
+  const viewButtons = [...document.querySelectorAll('#viewTabs button')];
+  const toastEl = document.getElementById('stageToast');
+  const toastText = document.getElementById('toastText');
+  let toastTimer = null;
+
+  function fitStage(){
+    const scale = stageWrap.clientWidth / 1440;
+    stage.style.transform = 'scale(' + scale + ')';
+    stageWrap.style.height = (900 * scale) + 'px';
+  }
+  window.addEventListener('resize', fitStage);
+  new ResizeObserver(fitStage).observe(stageWrap);
+  fitStage();
+
+  function show(view){
+    screens.forEach(s => s.classList.toggle('active', s.dataset.screen === view));
+    viewButtons.forEach(b => b.classList.toggle('active', b.dataset.view === view));
+    if(view === 'recording') startTimer(); else stopTimer();
+    try{ history.replaceState(null, '', '#' + view); }catch(err){}
+  }
+
+  viewButtons.forEach(b => b.addEventListener('click', () => show(b.dataset.view)));
+
+  document.querySelectorAll('[data-to]').forEach(el => {
+    el.addEventListener('click', () => show(el.dataset.to));
+  });
+
+  function toast(message){
+    toastText.textContent = message;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+  }
+
+  document.querySelectorAll('[data-toast]').forEach(el => {
+    el.addEventListener('click', () => toast(el.dataset.toast));
+  });
+
+  document.querySelectorAll('.toggle').forEach(el => {
+    el.addEventListener('click', () => el.classList.toggle('on'));
+  });
+
+  let delayIndex = 1;
+  const delays = ['关闭', '3 秒', '5 秒', '10 秒'];
+  document.getElementById('delayChip').addEventListener('click', () => {
+    delayIndex = (delayIndex + 1) % delays.length;
+    document.getElementById('delayValue').textContent = delays[delayIndex];
+  });
+
+  document.getElementById('openFolder').addEventListener('click', () => toast('原型中：打开输出文件夹'));
+  document.getElementById('hidePanel').addEventListener('click', () => toast('原型中：面板已隐藏到托盘，单击托盘图标可呼出'));
+  document.getElementById('closePanel').addEventListener('click', () => toast('原型中：关闭面板后仍可从托盘或快捷键呼出'));
+
+  let selectedKind = 'screen';
+  document.querySelectorAll('.source-card:not(.disabled)').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.source-card').forEach(c => c.classList.remove('is-active'));
+      card.classList.add('is-active');
+      selectedKind = card.dataset.kind;
+    });
+  });
+
+  document.getElementById('mainRecord').addEventListener('click', () => {
+    if(selectedKind === 'region'){ show('region'); return; }
+    if(selectedKind === 'window' || selectedKind === 'app'){
+      setPickerTab(selectedKind === 'app' ? '应用' : '窗口');
+      show('source');
+      return;
+    }
+    if(selectedKind === 'audio'){ show('recording'); return; }
+    show('recording');
+  });
+
+  const pickerData = {
+    '显示器': [
+      {type:'display', name:'显示器 1', sub:'2560 × 1600 · 主显示器 · 150% 缩放', size:'2560 × 1600'},
+      {type:'display', name:'显示器 2', sub:'1920 × 1080 · 扩展 · 100% 缩放', size:'1920 × 1080'}
+    ],
+    '窗口': [
+      {type:'window', name:'main.py — FastRecorder', sub:'Visual Studio Code · 1280 × 720', size:'1280 × 720'},
+      {type:'window', name:'FastRecorder 主面板', sub:'FastRecorder · 682 × 590', size:'682 × 590'},
+      {type:'window', name:'设计稿 — Figma', sub:'Figma · 1440 × 900', size:'1440 × 900'},
+      {type:'window', name:'产品文档 — Chrome', sub:'Google Chrome · 1200 × 800', size:'1200 × 800'}
+    ],
+    '应用': [
+      {type:'app', name:'Visual Studio Code', sub:'2 个窗口 · 1280 × 720', size:'合并预览', letter:'V'},
+      {type:'app', name:'Figma', sub:'1 个窗口 · 1440 × 900', size:'1440 × 900', letter:'F', tone:'figma'},
+      {type:'app', name:'Google Chrome', sub:'3 个窗口 · 1200 × 800', size:'合并预览', letter:'C', tone:'chrome'}
+    ]
+  };
+
+  let pickerTab = '窗口';
+  let selectedSource = 0;
+  let selectedApps = new Set(['Visual Studio Code']);
+
+  function renderSources(){
+    const data = pickerData[pickerTab];
+    const query = document.getElementById('sourceSearch').value.trim().toLowerCase();
+    const items = document.getElementById('sourceItems');
+    const filtered = data.filter(item => !query || (item.name + item.sub).toLowerCase().includes(query));
+    selectedSource = Math.max(0, Math.min(selectedSource, filtered.length - 1));
+    items.innerHTML = filtered.map((item, i) => {
+      let thumb = '';
+      if(item.type === 'display') thumb = '<span class="monitor"></span>';
+      if(item.type === 'window') thumb = '<span class="mini"></span>';
+      if(item.type === 'app') thumb = '<span class="appletter ' + (item.tone || '') + '">' + item.letter + '</span>';
+      const picked = pickerTab === '应用' ? selectedApps.has(item.name) : i === selectedSource;
+      return '<button class="source-item ' + (picked ? 'selected' : '') + '" data-index="' + i + '">'
+        + '<span class="source-thumb ' + item.type + '">' + thumb + '</span>'
+        + '<span class="source-meta"><b>' + item.name + '</b><span>' + item.sub + '</span></span>'
+        + '<span class="pick-check"><svg class="i" viewBox="0 0 24 24"><use href="#i-check"/></svg></span>'
+        + '</button>';
+    }).join('') || '<div style="padding:24px 12px;font-size:10px;color:#656c7f;text-align:center">没有匹配的来源</div>';
+    items.querySelectorAll('.source-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const index = Number(btn.dataset.index);
+        const source = filtered[index];
+        if(pickerTab === '应用'){
+          if(selectedApps.has(source.name)){
+            if(selectedApps.size === 1) return;
+            selectedApps.delete(source.name);
+          }else{
+            selectedApps.add(source.name);
+          }
+          renderSources();
+        }else{
+          selectedSource = index;
+          items.querySelectorAll('.source-item').forEach(x => x.classList.remove('selected'));
+          btn.classList.add('selected');
+        }
+        updatePreview(source);
+      });
+    });
+    if(filtered.length) updatePreview(filtered[selectedSource]);
+  }
+
+  function updatePreview(source){
+    if(!source) return;
+    const multiApp = pickerTab === '应用' && selectedApps.size > 1;
+    document.getElementById('pvTitle').textContent = multiApp ? selectedApps.size + ' 个应用窗口组合' : source.name;
+    document.getElementById('pvName').textContent = multiApp ? selectedApps.size + ' 个应用已选择' : source.name;
+    document.getElementById('pvSize').textContent = multiApp ? '合并预览' : source.size;
+    document.getElementById('previewKind').textContent = pickerTab === '应用' ? '应用窗口组合' : pickerTab;
+    document.getElementById('pRes').textContent = pickerTab === '显示器' ? '原始' : '窗口';
+  }
+
+  function setPickerTab(tab){
+    pickerTab = tab;
+    selectedSource = 0;
+    if(tab === '应用' && !selectedApps.size) selectedApps.add('Visual Studio Code');
+    document.querySelectorAll('#pickerTabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    const labels = {'显示器':'当前显示器', '窗口':'当前窗口', '应用':'运行中的应用'};
+    document.getElementById('listLabel').textContent = labels[tab];
+    renderSources();
+  }
+
+  document.querySelectorAll('#pickerTabs button').forEach(btn => {
+    btn.addEventListener('click', () => setPickerTab(btn.dataset.tab));
+  });
+  document.getElementById('sourceSearch').addEventListener('input', renderSources);
+  document.getElementById('refreshSources').addEventListener('click', () => {
+    renderSources();
+    toast('来源列表已刷新');
+  });
+  document.getElementById('refreshInline').addEventListener('click', () => {
+    renderSources();
+    toast('来源列表已刷新');
+  });
+  renderSources();
+  setPickerTab('窗口');
+
+  let recSeconds = 12 * 60 + 47;
+  let recInterval = null;
+  let recPaused = false;
+  const recTime = document.getElementById('recTime');
+  const hud = document.getElementById('hud');
+  const pauseBtn = document.getElementById('pauseRec');
+  const recLabel = document.getElementById('recLabel');
+
+  function paintTime(){
+    const h = String(Math.floor(recSeconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((recSeconds % 3600) / 60)).padStart(2, '0');
+    const s = String(recSeconds % 60).padStart(2, '0');
+    recTime.textContent = h + ':' + m + ':' + s;
+  }
+  function startTimer(){
+    if(recInterval) return;
+    recInterval = setInterval(() => {
+      if(!recPaused){ recSeconds++; paintTime(); }
+    }, 1000);
+  }
+  function stopTimer(){
+    clearInterval(recInterval);
+    recInterval = null;
+  }
+  paintTime();
+
+  pauseBtn.addEventListener('click', () => {
+    recPaused = !recPaused;
+    hud.classList.toggle('paused', recPaused);
+    recLabel.textContent = recPaused ? 'PAUSED' : 'REC';
+    pauseBtn.innerHTML = recPaused
+      ? '<svg class="i" viewBox="0 0 24 24"><use href="#i-play"/></svg>'
+      : '<svg class="i" viewBox="0 0 24 24"><use href="#i-pause"/></svg>';
+    pauseBtn.setAttribute('aria-label', recPaused ? '继续录制' : '暂停录制');
+    pauseBtn.title = recPaused ? '继续录制' : '暂停录制';
+    if(recPaused) toast('已暂停 · 暂停区间不会计入时长');
+    else toast('继续录制');
+  });
+
+  document.getElementById('stopRec').addEventListener('click', () => {
+    recPaused = false;
+    hud.classList.remove('paused');
+    recLabel.textContent = 'REC';
+    pauseBtn.innerHTML = '<svg class="i" viewBox="0 0 24 24"><use href="#i-pause"/></svg>';
+    show('done');
+  });
+
+  document.querySelectorAll('.switch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      if(sw.classList.contains('disabled')) return;
+      sw.classList.toggle('on');
+    });
+  });
+
+  document.querySelectorAll('.seg').forEach(seg => {
+    seg.addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      seg.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.theme-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.theme-swatch').forEach(x => x.classList.remove('active'));
+      sw.classList.add('active');
+      toast('原型中：切换主题将在下一版实现');
+    });
+  });
+
+  const setPages = {
+    general:['通用','启动、外观与更新'],
+    record:['录制','控制录制流程、画面效果与声音来源'],
+    output:['输出','文件格式、编码与保存位置'],
+    keys:['快捷键','全局动作与按键组合'],
+    block:['黑名单','选择不出现在画面中的应用']
+  };
+  document.querySelectorAll('#setNav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.page;
+      document.querySelectorAll('#setNav button').forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('.set-page').forEach(p => p.classList.toggle('active', p.dataset.page === page));
+      document.getElementById('setTitle').textContent = setPages[page][0];
+      document.getElementById('setSub').textContent = setPages[page][1];
+    });
+  });
+
+  document.addEventListener('keydown', e => {
+    if(e.target.matches('input, textarea')) return;
+    const map = {'1':'main','2':'source','3':'region','4':'recording','5':'done','6':'settings'};
+    if(map[e.key]) show(map[e.key]);
+    if(e.key === 'Escape') show('main');
+  });
+
+  const initialView = location.hash.replace('#','');
+  if(['main','source','region','recording','done','settings'].includes(initialView)) show(initialView);
+</script>
+</body>
+</html>
